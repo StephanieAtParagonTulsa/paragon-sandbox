@@ -1,0 +1,303 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:x="urn:schemas-microsoft-com:office:excel">
+    <head><meta charset="utf-8">
+    <style>
+    body { font-family: Calibri, Arial; font-size: 11pt; }
+    table { border-collapse: collapse; }
+    td, th { border: 1px solid #B8B8B8; padding: 2px 5px; white-space: nowrap; font-size: 8.5pt; }
+    .navy { background: #1F3864; color: #FFF; font-weight: bold; }
+    .navy2 { background: #2F5496; color: #FFF; font-weight: bold; }
+    .date-bg { background: #D6DCE4; color: #1F3864; font-weight: bold; text-align: center; font-size: 8pt; }
+    .cap-bg { background: #FCE4D6; font-weight: bold; text-align: center; }
+    .hdr-bg { background: #BDD7EE; color: #1F3864; font-weight: bold; text-align: center; font-size: 8pt; text-transform: uppercase; }
+    .hdr-bg2 { background: #9DC3E6; color: #1F3864; font-weight: bold; }
+    .req-bg { background: #DDEBF7; font-weight: bold; text-align: center; }
+    .over { background: #C6EFCE; color: #375623; font-weight: bold; text-align: center; }
+    .under { background: #FFC7CE; color: #9C0006; font-weight: bold; text-align: center; }
+    .zero-ou { background: #FFFFCC; text-align: center; }
+    .sub-cell { background: #FFFF00; font-weight: bold; text-align: center; }
+    .num-cell { text-align: center; }
+    .lbl-r { text-align: right; font-weight: bold; }
+    .info-hdr { font-weight: bold; background: #2F5496; color: #FFF; }
+    </style></head><body><table><tr><td colspan="27" class="navy" style="font-size:11pt;padding:5px 8px;">
+    LOOK AHEAD RESOURCE REPORT — WEEK OF 6/1/2026</td></tr></table><br/><table><tr>
+      <td colspan="10" class="navy" style="text-align:left">Paragon Site Crews</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 1</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 2</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 3</td>
+      <td class="navy" style="font-size:8pt">WEEK OF</td>
+      <td class="navy"></td>
+    </tr><tr><td colspan="10" class="date-bg" style="text-align:right">Date:</td><td class="date-bg">6/1</td><td class="date-bg">6/2</td><td class="date-bg">6/3</td><td class="date-bg">6/4</td><td class="date-bg">6/5</td><td class="date-bg">6/8</td><td class="date-bg">6/9</td><td class="date-bg">6/10</td><td class="date-bg">6/11</td><td class="date-bg">6/12</td><td class="date-bg">6/15</td><td class="date-bg">6/16</td><td class="date-bg">6/17</td><td class="date-bg">6/18</td><td class="date-bg">6/19</td><td class="date-bg">6/1/2026</td><td></td></tr><tr>
+      <td colspan="3" class="cap-bg hdr-bg2">Paragon Site Crews</td>
+      <td class="cap-bg" style="text-align:left;font-weight:bold">Headcount:</td>
+      <td colspan="6" class="cap-bg"></td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td></td><td></td></tr><tr><th class="hdr-bg2" style="text-align:left">#</th><th class="hdr-bg2" style="text-align:left">PROJECT NAME</th><th class="hdr-bg2" style="text-align:left">CREW</th><th class="hdr-bg2" style="text-align:left">PM/GS</th><th class="hdr-bg2" style="text-align:left">ORIG DUE</th><th class="hdr-bg2" style="text-align:left">ADD DAYS</th><th class="hdr-bg2" style="text-align:left">ADJ DUE</th><th class="hdr-bg2" style="text-align:left">DAYS REM</th><th class="hdr-bg2" style="text-align:left">STATUS</th><th class="hdr-bg2" style="text-align:left">IMPACT</th><th class="hdr-bg">Mon</th><th class="hdr-bg">Tue</th><th class="hdr-bg">Wed</th><th class="hdr-bg">Thu</th><th class="hdr-bg">Fri</th><th class="hdr-bg">Mon</th><th class="hdr-bg">Tue</th><th class="hdr-bg">Wed</th><th class="hdr-bg">Thu</th><th class="hdr-bg">Fri</th><th class="hdr-bg">Mon</th><th class="hdr-bg">Tue</th><th class="hdr-bg">Wed</th><th class="hdr-bg">Thu</th><th class="hdr-bg">Fri</th><th class="hdr-bg"></th><th></th></tr><tr>
+        <td>565</td>
+        <td>Jenks-Elm Street</td>
+        <td>Jared</td>
+        <td>Mike</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td>571</td>
+        <td>BA - Jasper/Aspen</td>
+        <td>Rolondo</td>
+        <td>Mike</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="num-cell">5</td><td class=""></td><td class="num-cell">5</td><td class="num-cell">5</td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td>575</td>
+        <td>SGL Airport</td>
+        <td>Elijah</td>
+        <td>Mike/Clint</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td></td><td></td></tr><tr>
+        <td>574</td>
+        <td>COT 91st Street</td>
+        <td>John</td>
+        <td>Mike/Clint</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class=""></td><td class=""></td><td class="num-cell">5</td><td class="num-cell">5</td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td>577</td>
+        <td>Kirby-Smith Yard</td>
+        <td>Jimmy</td>
+        <td></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td>580</td>
+        <td>Jenks-Elm Street (6/15/2026)</td>
+        <td>Jared</td>
+        <td></td>
+        <td style="text-align:center">06/15/2026</td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666">6/15/2026</td>
+        <td class="num-cell" style="color:#C00000;font-weight:bold">14</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td></td><td></td></tr><tr>
+        <td></td>
+        <td>Rejoice Parking Lot</td>
+        <td></td>
+        <td></td>
+        <td style="text-align:center">06/01/2026</td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666">6/1/2026</td>
+        <td class="num-cell" style="color:#C00000;font-weight:bold">0</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td></td>
+        <td>Riverline Early Demo</td>
+        <td>Sub</td>
+        <td></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center">SUB</td>
+        <td class="num-cell"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr><td colspan="10" class="lbl-r req-bg">Staff Required</td><td class="req-bg">20</td><td class="req-bg">20</td><td class="req-bg">20</td><td class="req-bg">20</td><td class="req-bg">20</td><td class="req-bg">20</td><td class="req-bg">20</td><td class="req-bg">15</td><td class="req-bg">5</td><td class="req-bg">20</td><td class="req-bg">20</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td></td><td></td></tr><tr><td colspan="10" class="lbl-r req-bg">Staff Over / Under</td><td class="under">-10</td><td class="under">-10</td><td class="under">-10</td><td class="under">-10</td><td class="under">-10</td><td class="under">-10</td><td class="under">-10</td><td class="under">-5</td><td class="over">5</td><td class="under">-10</td><td class="under">-10</td><td class="zero-ou">0</td><td class="zero-ou">0</td><td class="zero-ou">0</td><td class="zero-ou">0</td><td></td><td></td></tr></table><br/><table><tr>
+      <td colspan="10" class="navy" style="text-align:left">Paragon Utility Crews</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 1</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 2</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 3</td>
+      <td class="navy" style="font-size:8pt">WEEK OF</td>
+      <td class="navy"></td>
+    </tr><tr><td colspan="10" class="date-bg" style="text-align:right">Date:</td><td class="date-bg">6/1</td><td class="date-bg">6/2</td><td class="date-bg">6/3</td><td class="date-bg">6/4</td><td class="date-bg">6/5</td><td class="date-bg">6/8</td><td class="date-bg">6/9</td><td class="date-bg">6/10</td><td class="date-bg">6/11</td><td class="date-bg">6/12</td><td class="date-bg">6/15</td><td class="date-bg">6/16</td><td class="date-bg">6/17</td><td class="date-bg">6/18</td><td class="date-bg">6/19</td><td class="date-bg">6/1/2026</td><td></td></tr><tr>
+      <td colspan="3" class="cap-bg hdr-bg2">Paragon Utility Crews</td>
+      <td class="cap-bg" style="text-align:left;font-weight:bold">Headcount:</td>
+      <td colspan="6" class="cap-bg"></td><td class="cap-bg">25</td><td class="cap-bg">25</td><td class="cap-bg">25</td><td class="cap-bg">25</td><td class="cap-bg">25</td><td class="cap-bg">25</td><td class="cap-bg">25</td><td class="cap-bg">25</td><td class="cap-bg">25</td><td class="cap-bg">25</td><td class="cap-bg">25</td><td class="cap-bg">25</td><td class="cap-bg">25</td><td class="cap-bg">25</td><td class="cap-bg">25</td><td></td><td></td></tr><tr><th class="hdr-bg2" style="text-align:left">#</th><th class="hdr-bg2" style="text-align:left">PROJECT NAME</th><th class="hdr-bg2" style="text-align:left">CREW</th><th class="hdr-bg2" style="text-align:left">PM/GS</th><th class="hdr-bg2" style="text-align:left">ORIG DUE</th><th class="hdr-bg2" style="text-align:left">ADD DAYS</th><th class="hdr-bg2" style="text-align:left">ADJ DUE</th><th class="hdr-bg2" style="text-align:left">DAYS REM</th><th class="hdr-bg2" style="text-align:left">STATUS</th><th class="hdr-bg2" style="text-align:left">IMPACT</th><th class="hdr-bg">Mon</th><th class="hdr-bg">Tue</th><th class="hdr-bg">Wed</th><th class="hdr-bg">Thu</th><th class="hdr-bg">Fri</th><th class="hdr-bg">Mon</th><th class="hdr-bg">Tue</th><th class="hdr-bg">Wed</th><th class="hdr-bg">Thu</th><th class="hdr-bg">Fri</th><th class="hdr-bg">Mon</th><th class="hdr-bg">Tue</th><th class="hdr-bg">Wed</th><th class="hdr-bg">Thu</th><th class="hdr-bg">Fri</th><th class="hdr-bg"></th><th></th></tr><tr>
+        <td>566</td>
+        <td>COT Woodward Park</td>
+        <td>Sergio</td>
+        <td>Eric</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class=""></td><td class=""></td><td class="num-cell">10</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td>564</td>
+        <td>MCC 24" Tie-In</td>
+        <td>John</td>
+        <td>Mike</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td>565</td>
+        <td>Jenks-Elm Street (Storm)</td>
+        <td>Anthony</td>
+        <td>Mike</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td></td><td></td></tr><tr>
+        <td>574</td>
+        <td>COT 91st Street</td>
+        <td>John</td>
+        <td>Mike</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td>574</td>
+        <td>COT 91st Street (Sub)</td>
+        <td>KSL</td>
+        <td>Mike</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center">SUB</td>
+        <td class="num-cell"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td>478</td>
+        <td>Pine/Mingo Property</td>
+        <td></td>
+        <td></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center">HOLD</td>
+        <td class="num-cell"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr><td colspan="10" class="lbl-r req-bg">Staff Required</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">15</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td></td><td></td></tr><tr><td colspan="10" class="lbl-r req-bg">Staff Over / Under</td><td class="over">20</td><td class="over">20</td><td class="over">10</td><td class="over">15</td><td class="over">15</td><td class="over">15</td><td class="over">15</td><td class="over">15</td><td class="over">15</td><td class="over">20</td><td class="over">20</td><td class="over">20</td><td class="over">20</td><td class="over">20</td><td class="over">20</td><td></td><td></td></tr></table><br/><table><tr>
+      <td colspan="10" class="navy" style="text-align:left">Paragon Concrete Crews</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 1</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 2</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 3</td>
+      <td class="navy" style="font-size:8pt">WEEK OF</td>
+      <td class="navy"></td>
+    </tr><tr><td colspan="10" class="date-bg" style="text-align:right">Date:</td><td class="date-bg">6/1</td><td class="date-bg">6/2</td><td class="date-bg">6/3</td><td class="date-bg">6/4</td><td class="date-bg">6/5</td><td class="date-bg">6/8</td><td class="date-bg">6/9</td><td class="date-bg">6/10</td><td class="date-bg">6/11</td><td class="date-bg">6/12</td><td class="date-bg">6/15</td><td class="date-bg">6/16</td><td class="date-bg">6/17</td><td class="date-bg">6/18</td><td class="date-bg">6/19</td><td class="date-bg">6/1/2026</td><td></td></tr><tr>
+      <td colspan="3" class="cap-bg hdr-bg2">Paragon Concrete Crews</td>
+      <td class="cap-bg" style="text-align:left;font-weight:bold">Headcount:</td>
+      <td colspan="6" class="cap-bg"></td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td class="cap-bg">10</td><td></td><td></td></tr><tr><th class="hdr-bg2" style="text-align:left">#</th><th class="hdr-bg2" style="text-align:left">PROJECT NAME</th><th class="hdr-bg2" style="text-align:left">CREW</th><th class="hdr-bg2" style="text-align:left">PM/GS</th><th class="hdr-bg2" style="text-align:left">ORIG DUE</th><th class="hdr-bg2" style="text-align:left">ADD DAYS</th><th class="hdr-bg2" style="text-align:left">ADJ DUE</th><th class="hdr-bg2" style="text-align:left">DAYS REM</th><th class="hdr-bg2" style="text-align:left">STATUS</th><th class="hdr-bg2" style="text-align:left">IMPACT</th><th class="hdr-bg">Mon</th><th class="hdr-bg">Tue</th><th class="hdr-bg">Wed</th><th class="hdr-bg">Thu</th><th class="hdr-bg">Fri</th><th class="hdr-bg">Mon</th><th class="hdr-bg">Tue</th><th class="hdr-bg">Wed</th><th class="hdr-bg">Thu</th><th class="hdr-bg">Fri</th><th class="hdr-bg">Mon</th><th class="hdr-bg">Tue</th><th class="hdr-bg">Wed</th><th class="hdr-bg">Thu</th><th class="hdr-bg">Fri</th><th class="hdr-bg"></th><th></th></tr><tr>
+        <td>565</td>
+        <td>Elm St</td>
+        <td>Randy</td>
+        <td></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class="num-cell">5</td><td class=""></td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td>571</td>
+        <td>BA - Jasper/Aspen</td>
+        <td>Randy</td>
+        <td>Mike</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class=""></td><td class="num-cell">5</td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td></td>
+        <td>Muskogee Ave Punch List</td>
+        <td>Randy</td>
+        <td></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td>566</td>
+        <td>Woodward Park</td>
+        <td>Miller</td>
+        <td>Eric</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td></td>
+        <td>SGL Airport</td>
+        <td>Randy</td>
+        <td></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr><td colspan="10" class="lbl-r req-bg">Staff Required</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">15</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg">10</td><td class="req-bg"></td><td class="req-bg"></td><td></td><td></td></tr><tr><td colspan="10" class="lbl-r req-bg">Staff Over / Under</td><td class="zero-ou">0</td><td class="zero-ou">0</td><td class="zero-ou">0</td><td class="zero-ou">0</td><td class="zero-ou">0</td><td class="zero-ou">0</td><td class="zero-ou">0</td><td class="zero-ou">0</td><td class="under">-5</td><td class="zero-ou">0</td><td class="zero-ou">0</td><td class="zero-ou">0</td><td class="zero-ou">0</td><td class="over">10</td><td class="over">10</td><td></td><td></td></tr></table><br/><table><tr>
+      <td colspan="10" class="navy" style="text-align:left">Paragon Asphalt Crews</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 1</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 2</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 3</td>
+      <td class="navy" style="font-size:8pt">WEEK OF</td>
+      <td class="navy"></td>
+    </tr><tr><td colspan="10" class="date-bg" style="text-align:right">Date:</td><td class="date-bg">6/1</td><td class="date-bg">6/2</td><td class="date-bg">6/3</td><td class="date-bg">6/4</td><td class="date-bg">6/5</td><td class="date-bg">6/8</td><td class="date-bg">6/9</td><td class="date-bg">6/10</td><td class="date-bg">6/11</td><td class="date-bg">6/12</td><td class="date-bg">6/15</td><td class="date-bg">6/16</td><td class="date-bg">6/17</td><td class="date-bg">6/18</td><td class="date-bg">6/19</td><td class="date-bg">6/1/2026</td><td></td></tr><tr>
+      <td colspan="3" class="cap-bg hdr-bg2">Paragon Asphalt Crews</td>
+      <td class="cap-bg" style="text-align:left;font-weight:bold">Headcount:</td>
+      <td colspan="6" class="cap-bg"></td><td class="cap-bg">7</td><td class="cap-bg">7</td><td class="cap-bg">7</td><td class="cap-bg">7</td><td class="cap-bg">7</td><td class="cap-bg">7</td><td class="cap-bg">7</td><td class="cap-bg">7</td><td class="cap-bg">7</td><td class="cap-bg">7</td><td class="cap-bg">7</td><td class="cap-bg">7</td><td class="cap-bg">7</td><td class="cap-bg">7</td><td class="cap-bg">7</td><td></td><td></td></tr><tr><th class="hdr-bg2" style="text-align:left">#</th><th class="hdr-bg2" style="text-align:left">PROJECT NAME</th><th class="hdr-bg2" style="text-align:left">CREW</th><th class="hdr-bg2" style="text-align:left">PM/GS</th><th class="hdr-bg2" style="text-align:left">ORIG DUE</th><th class="hdr-bg2" style="text-align:left">ADD DAYS</th><th class="hdr-bg2" style="text-align:left">ADJ DUE</th><th class="hdr-bg2" style="text-align:left">DAYS REM</th><th class="hdr-bg2" style="text-align:left">STATUS</th><th class="hdr-bg2" style="text-align:left">IMPACT</th><th class="hdr-bg">Mon</th><th class="hdr-bg">Tue</th><th class="hdr-bg">Wed</th><th class="hdr-bg">Thu</th><th class="hdr-bg">Fri</th><th class="hdr-bg">Mon</th><th class="hdr-bg">Tue</th><th class="hdr-bg">Wed</th><th class="hdr-bg">Thu</th><th class="hdr-bg">Fri</th><th class="hdr-bg">Mon</th><th class="hdr-bg">Tue</th><th class="hdr-bg">Wed</th><th class="hdr-bg">Thu</th><th class="hdr-bg">Fri</th><th class="hdr-bg"></th><th></th></tr><tr>
+        <td>571</td>
+        <td>BA - Jasper/Aspen</td>
+        <td>Rye</td>
+        <td>Mike</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class="num-cell">5</td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td>573</td>
+        <td>Averitt</td>
+        <td>Rye</td>
+        <td>Eric</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class="num-cell">5</td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td></td>
+        <td>Berryhill - Sand Springs</td>
+        <td>Rye</td>
+        <td></td>
+        <td style="text-align:center">02/15/2026</td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666">2/15/2026</td>
+        <td class="num-cell" style="color:#C00000;font-weight:bold">-106</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">5</td><td></td><td></td></tr><tr>
+        <td></td>
+        <td>Rejoice Parking Lot</td>
+        <td></td>
+        <td></td>
+        <td style="text-align:center">06/01/2026</td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666">6/1/2026</td>
+        <td class="num-cell" style="color:#C00000;font-weight:bold">0</td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr>
+        <td>565</td>
+        <td>Jenks-Elm Street</td>
+        <td>Jared</td>
+        <td></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td>
+        <td style="text-align:center;font-size:8pt;color:#666"></td>
+        <td class="num-cell" style="color:#375623"></td>
+        <td style="text-align:center"></td>
+        <td class="num-cell"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td></td><td></td></tr><tr><td colspan="10" class="lbl-r req-bg">Staff Required</td><td class="req-bg">15</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td class="req-bg">5</td><td></td><td></td></tr><tr><td colspan="10" class="lbl-r req-bg">Staff Over / Under</td><td class="under">-8</td><td class="over">2</td><td class="over">2</td><td class="over">2</td><td class="over">2</td><td class="over">2</td><td class="over">2</td><td class="over">2</td><td class="over">2</td><td class="over">2</td><td class="over">2</td><td class="over">2</td><td class="over">2</td><td class="over">2</td><td class="over">2</td><td></td><td></td></tr></table><br/></body></html>

@@ -1,0 +1,4 @@
+/api/blobs          /.netlify/functions/blobs  200
+/api/store-report   /.netlify/functions/blobs  200
+/api/get-report     /.netlify/functions/blobs  200
+/api/list-reports   /.netlify/functions/blobs  200

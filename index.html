@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paragon Contractors — Operations Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:    #0D2137;
+  --navy2:   #162B45;
+  --blue:    #1B3A6B;
+  --accent:  #E8402A;
+  --gold:    #C9921A;
+  --steel:   #4A7FA5;
+  --green:   #16803C;
+  --green-bg:#F0FDF4;
+  --yellow:  #92600A;
+  --yellow-bg:#FFFBEB;
+  --muted:   #6B7A8D;
+  --border:  #D3DFF0;
+  --light:   #F0F4F9;
+  --white:   #FFFFFF;
+  --text:    #1A2535;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Barlow',sans-serif;background:#0A1929;color:var(--text);min-height:100vh;}
+
+/* ── Header ── */
+header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 60%,var(--blue) 100%);border-bottom:3px solid var(--accent);padding:28px 40px 24px;}
+.header-inner{max-width:1280px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.header-brand{display:flex;align-items:flex-end;gap:16px;}
+.header-badge{background:var(--accent);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:2.5px;padding:4px 10px;text-transform:uppercase;border-radius:2px;white-space:nowrap;margin-bottom:4px;}
+.header-title{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:800;color:#fff;letter-spacing:.5px;line-height:1;}
+.header-sub{font-size:12px;color:#8AACCC;margin-top:5px;letter-spacing:.3px;}
+.header-meta{text-align:right;}
+.header-week{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:1px;text-transform:uppercase;}
+.header-date{font-size:12px;color:#8AACCC;margin-top:3px;}
+
+/* ── Main ── */
+main{max-width:1280px;margin:0 auto;padding:40px 40px 60px;}
+
+/* ── Section label ── */
+.section-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#4A7FA5;margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';flex:1;height:1px;background:rgba(74,127,165,.25);}
+
+/* ── Grid ── */
+.tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:48px;}
+@media(max-width:900px){.tools-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:580px){.tools-grid{grid-template-columns:1fr;}}
+
+/* ── Card ── */
+.card{background:#fff;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s;cursor:pointer;text-decoration:none;border:1px solid var(--border);}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.18);}
+.card-stripe{height:4px;}
+.card-body{padding:22px 22px 16px;flex:1;display:flex;flex-direction:column;gap:10px;}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--navy);letter-spacing:.3px;line-height:1.15;}
+.card-badge{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border-radius:3px;white-space:nowrap;flex-shrink:0;margin-top:2px;}
+.badge-field{background:#EEF6FF;color:#1B3A6B;}
+.badge-mgmt{background:#FFF3E0;color:#7B4500;}
+.badge-acct{background:#F0FDF4;color:#166534;}
+.badge-est{background:#FDF4FF;color:#6B21A8;}
+.badge-pm{background:#FFF1F0;color:#9B1C1C;}
+.card-desc{font-size:12.5px;color:var(--muted);line-height:1.5;flex:1;}
+.card-footer{padding:12px 22px;border-top:1px solid var(--light);display:flex;align-items:center;justify-content:space-between;}
+.card-status{display:flex;align-items:center;gap:6px;font-size:11px;font-family:'IBM Plex Mono',monospace;}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dot-green{background:#16803C;}
+.dot-yellow{background:#D97706;}
+.dot-gray{background:#9CA3AF;}
+.dot-pulse{animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.status-text{color:var(--muted);}
+.card-arrow{font-size:16px;color:var(--steel);transition:transform .15s;}
+.card:hover .card-arrow{transform:translateX(4px);}
+
+/* ── Footer ── */
+footer{text-align:center;padding:24px;font-size:11px;color:#3A5A7A;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-brand">
+      <div>
+        <div class="header-badge">Operations Hub</div>
+        <div class="header-title">Paragon Contractors</div>
+        <div class="header-sub">Tulsa, Oklahoma · Internal Tools</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="header-week" id="week-label">Loading…</div>
+      <div class="header-date" id="date-label"></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <div class="section-label">Field &amp; Scheduling</div>
+  <div class="tools-grid">
+
+    <a class="card" href="/lookahead.html">
+      <div class="card-stripe" style="background:#E8402A;"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-title">3-Week Look-Ahead</div>
+          <span class="card-badge badge-field">Supers</span>
+        </div>
+        <div class="card-desc">Weekly crew schedule input. Supers submit daily crew assignments for each active job across a 3-week window.</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-status">
+          <div class="status-dot dot-pulse" id="crew-dot" style="background:#9CA3AF;"></div>
+          <span class="status-text" id="crew-status">Loading…</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="card" href="/crew-schedule.html">
+      <div class="card-stripe" style="background:#1B3A6B;"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-title">Crew Deployment Gantt</div>
+          <span class="card-badge badge-mgmt">Management</span>
+        </div>
+        <div class="card-desc">Visual Gantt view of crew assignments across all active jobs and weeks. Read-only viewer for Tyler and Dale.</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-status">
+          <div class="status-dot" id="gantt-dot" style="background:#9CA3AF;"></div>
+          <span class="status-text" id="gantt-status">Loading…</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="section-label">Financial</div>
+  <div class="tools-grid">
+
+    <a class="card" href="/paragon_wip_v13.html">
+      <div class="card-stripe" style="background:#16803C;"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-title">WIP Dashboard</div>
+          <span class="card-badge badge-acct">Accounting</span>
+        </div>
+        <div class="card-desc">Live job cost review. Load Vista exports to analyze contract values, actual costs, projected GP%, and billing exposure across all active jobs.</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-status">
+          <div class="status-dot" id="wip-dot" style="background:#9CA3AF;"></div>
+          <span class="status-text" id="wip-status">Loading…</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="section-label">Estimating &amp; Project Controls</div>
+  <div class="tools-grid">
+
+    <a class="card" href="/odot_price_history.html">
+      <div class="card-stripe" style="background:#C9921A;"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-title">ODOT Price History</div>
+          <span class="card-badge badge-est">Estimating</span>
+        </div>
+        <div class="card-desc">Searchable lookup for current ODOT pay item unit prices. Jan 22, 2026 bid schedule — 1,440 pay items.</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-status">
+          <div class="status-dot dot-gray"></div>
+          <span class="status-text">Jan 22, 2026 · 1,440 items</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="card" href="/production-factor.html">
+      <div class="card-stripe" style="background:#4A7FA5;"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-title">Production Factor</div>
+          <span class="card-badge badge-pm">Field / PM</span>
+        </div>
+        <div class="card-desc">Run-rate calculator for active jobs. Determines whether a .777, .888, or .999 health code activity is needed based on current production factors.</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-status">
+          <div class="status-dot dot-gray"></div>
+          <span class="status-text">Run-rate calculator</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="card" href="/hb-vista-compare.html">
+      <div class="card-stripe" style="background:#6B21A8;"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-title">HB-Vista Compare</div>
+          <span class="card-badge badge-acct">Accounting / PM</span>
+        </div>
+        <div class="card-desc">Three-way comparison and memo generation tool. Identifies HeavyBid budget errors before they import into Vista.</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-status">
+          <div class="status-dot dot-gray"></div>
+          <span class="status-text">Budget error checker</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+  </div>
+
+</main>
+
+<footer>PARAGON CONTRACTORS · TULSA OK · INTERNAL USE ONLY</footer>
+
+<script>
+// ── Date / week header ──────────────────────────────────────────────────────
+(function(){
+  var now = new Date();
+  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('date-label').textContent =
+    days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+
+  // Week of label — Sunday of current week
+  var sunday = new Date(now);
+  sunday.setDate(now.getDate() - now.getDay());
+  document.getElementById('week-label').textContent =
+    'Week of ' + months[sunday.getMonth()] + ' ' + sunday.getDate();
+})();
+
+// ── Current week key (matches lookahead.html format YYYY-MM-DD) ─────────────
+function currentWeekKey(){
+  var d = new Date();
+  d.setDate(d.getDate() - d.getDay()); // Sunday
+  return d.toISOString().slice(0,10);
+}
+
+// ── Crew submission status ───────────────────────────────────────────────────
+async function loadCrewStatus(){
+  var dot   = document.getElementById('crew-dot');
+  var txt   = document.getElementById('crew-status');
+  var gdot  = document.getElementById('gantt-dot');
+  var gtxt  = document.getElementById('gantt-status');
+  var SUPERS = ['Jared','Rolondo','Elijah','John','Jimmy','Randy','Sergio','Anthony','Rye','Miller'];
+  try {
+    var week = currentWeekKey();
+    var res  = await fetch('/api/blobs?week=' + week);
+    if(!res.ok) throw new Error();
+    var data = await res.json();
+    var submitted = Object.keys(data||{}).length;
+    var total     = SUPERS.length;
+    var label     = submitted + ' of ' + total + ' submitted · Week of ' + week.slice(5).replace('-','/');
+    var fresh     = submitted > 0;
+    var color     = submitted === total ? '#16803C' : submitted > 0 ? '#D97706' : '#9CA3AF';
+    dot.style.background  = color;
+    gdot.style.background = color;
+    dot.classList.remove('dot-pulse');
+    gdot.classList.remove('dot-pulse');
+    txt.textContent  = label;
+    gtxt.textContent = label;
+  } catch(e) {
+    dot.style.background  = '#9CA3AF';
+    gdot.style.background = '#9CA3AF';
+    dot.classList.remove('dot-pulse');
+    txt.textContent  = 'No submissions this week';
+    gtxt.textContent = 'No submissions this week';
+  }
+}
+
+// ── WIP report status ────────────────────────────────────────────────────────
+async function loadWipStatus(){
+  var dot = document.getElementById('wip-dot');
+  var txt = document.getElementById('wip-status');
+  try {
+    var res = await fetch('/api/list-reports');
+    if(!res.ok) throw new Error();
+    var data  = await res.json();
+    var slots = data.slots || {};
+    var keys  = Object.keys(slots);
+    var count = keys.length;
+    if(count === 0){
+      dot.style.background = '#9CA3AF';
+      txt.textContent = 'No reports loaded';
+      return;
+    }
+    // Find most recent upload
+    var latest = keys.reduce(function(a,b){
+      return (slots[a].uploadedAt||'') > (slots[b].uploadedAt||'') ? a : b;
+    });
+    var dt = slots[latest].uploadedAt
+      ? new Date(slots[latest].uploadedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})
+      : '';
+    var sevenDaysAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString();
+    var fresh = slots[latest].uploadedAt && slots[latest].uploadedAt > sevenDaysAgo;
+    dot.style.background = fresh ? '#16803C' : '#D97706';
+    txt.textContent = count + ' of 7 reports loaded' + (dt ? ' · ' + dt : '');
+  } catch(e) {
+    dot.style.background = '#9CA3AF';
+    txt.textContent = 'Status unavailable';
+  }
+}
+
+// ── Load all ─────────────────────────────────────────────────────────────────
+Promise.all([loadCrewStatus(), loadWipStatus()]);
+</script>
+
+</body>
+</html>
