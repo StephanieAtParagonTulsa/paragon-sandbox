@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paragon — 3-Week Look-Ahead [BETA]</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1F3864;--navy2:#2F5496;--navy3:#4472C4;
+  --amber:#FFD966;--amber2:#BF8F00;
+  --blue-hdr:#BDD7EE;--blue-hdr2:#9DC3E6;
+  --date-bg:#D6DCE4;--cap-bg:#FCE4D6;
+  --over:#C6EFCE;--over-fg:#375623;
+  --under:#FFC7CE;--under-fg:#9C0006;
+  --sub:#FFFF00;
+  --border:#B8B8B8;
+  --row-alt:#F5F7FA;
+  --shadow:0 2px 10px rgba(0,0,0,.14);
+}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#E4E8F0;color:#1a1a1a;min-height:100vh}
+
+/* ─── HEADER ─────────────────────────────────────────── */
+#hdr{
+  background:var(--navy);color:#fff;
+  padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:200;box-shadow:var(--shadow);
+}
+#hdr h1{font-size:15px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;flex:1;min-width:200px}
+#hdr .logo{font-size:10px;opacity:.6;letter-spacing:1px}
+.ctrl{display:flex;align-items:center;gap:6px}
+.ctrl label{font-size:11px;opacity:.75;white-space:nowrap}
+.ctrl input[type=date]{
+  padding:4px 8px;border:1px solid rgba(255,255,255,.3);border-radius:3px;
+  background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-family:inherit
+}
+.ctrl input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.7}
+.btn{
+  padding:5px 13px;border-radius:3px;border:none;
+  font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.4px;
+  text-transform:uppercase;transition:opacity .15s;white-space:nowrap
+}
+.btn:hover{opacity:.82}
+.btn-export{background:var(--amber);color:var(--navy)}
+.btn-save{background:#70AD47;color:#fff}
+.btn-load{background:#fff;color:var(--navy)}
+.btn-print{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35)}
+
+/* ─── MAIN ────────────────────────────────────────────── */
+#main{padding:14px 14px 40px}
+
+/* ─── SECTION CARD ────────────────────────────────────── */
+.sec{background:#fff;border-radius:5px;box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+.sec-hdr{
+  background:var(--navy);color:#fff;padding:7px 12px;
+  display:flex;align-items:center;gap:10px
+}
+.sec-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;flex:1}
+.cap-ctrl{display:flex;align-items:center;gap:5px;font-size:11px}
+.cap-ctrl input{
+  width:46px;padding:2px 5px;border:1px solid rgba(255,255,255,.35);
+  border-radius:3px;background:rgba(255,255,255,.14);color:#fff;
+  text-align:center;font-size:12px;font-weight:700;font-family:inherit
+}
+.btn-add-job{
+  background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);
+  padding:3px 10px;border-radius:3px;font-size:11px;cursor:pointer;letter-spacing:.3px
+}
+.btn-add-job:hover{background:rgba(255,255,255,.25)}
+
+/* ─── TABLE ───────────────────────────────────────────── */
+.tbl-wrap{overflow-x:auto}
+table.la{
+  border-collapse:collapse;font-size:11px;
+  width:100%;min-width:1200px
+}
+.la th,.la td{border:1px solid var(--border);vertical-align:middle;white-space:nowrap}
+
+/* week header row */
+.la .r-week th{
+  background:var(--navy);color:#fff;text-align:center;
+  font-size:10px;font-weight:700;padding:3px 4px;letter-spacing:.4px
+}
+.la .r-week .info-cell{background:var(--navy2);text-align:left;padding:3px 6px}
+
+/* dates row */
+.la .r-dates td{
+  background:var(--date-bg);text-align:center;
+  font-size:9px;color:var(--navy);font-weight:600;padding:3px 2px
+}
+.la .r-dates .info-cell{background:#E8EBF0;color:var(--navy);font-size:10px;font-weight:700;padding:3px 6px;text-align:right}
+
+/* headcount row */
+.la .r-cap td{
+  background:var(--cap-bg);text-align:center;
+  font-size:11px;font-weight:700;color:var(--navy);padding:3px 2px
+}
+.la .r-cap .info-cell{background:#F5F0E8;text-align:left;padding:3px 6px;font-weight:700}
+
+/* column header row */
+.la .r-colhdr th{
+  background:var(--blue-hdr);color:var(--navy);text-align:center;
+  font-size:9px;font-weight:700;padding:3px 2px;text-transform:uppercase
+}
+.la .r-colhdr .info-cell{background:var(--blue-hdr2);text-align:left;padding:3px 6px;font-size:10px}
+
+/* job rows */
+.la .r-job td{background:#fff;padding:0}
+.la .r-job:nth-child(odd) td{background:var(--row-alt)}
+.la .r-job:hover td{background:#EBF3FB !important}
+
+/* info cells */
+.la td.info-cell{padding:2px 4px}
+input.fi{
+  width:100%;padding:3px 5px;border:none;background:transparent;
+  font-size:11px;font-family:inherit;color:#1a1a1a;min-height:26px;outline:none
+}
+input.fi:focus{background:#EBF3FB;outline:1px solid var(--navy3)}
+
+/* day cells */
+td.dc{width:34px;min-width:34px;text-align:center;padding:0}
+input.di{
+  width:100%;height:26px;border:none;background:transparent;
+  text-align:center;font-size:11px;font-family:inherit;outline:none;cursor:pointer
+}
+input.di:focus{background:#EBF3FB;outline:1px solid var(--navy3)}
+td.dc.is-sub{background:var(--sub)}
+td.dc.is-sub input.di{background:transparent;font-weight:700;color:#333}
+td.dc.is-zero input.di{color:#ccc}
+
+/* delete button */
+td.del-cell{width:22px;text-align:center;padding:1px}
+.btn-del{background:none;border:none;color:#C00;cursor:pointer;font-size:13px;opacity:.5;padding:0 3px}
+.btn-del:hover{opacity:1}
+
+/* add row */
+.r-add td{padding:3px 4px;background:#F9F9F9;border-color:#E0E0E0}
+.btn-add-row{
+  background:none;border:1px dashed #C0C0C0;color:#888;cursor:pointer;
+  font-size:11px;padding:2px 12px;border-radius:3px;width:100%;text-align:left
+}
+.btn-add-row:hover{border-color:var(--navy3);color:var(--navy);background:#F0F5FF}
+
+/* totals */
+.la .r-req td{background:#DDEBF7;font-weight:700;text-align:center;font-size:11px;padding:3px 4px;color:var(--navy)}
+.la .r-req .lbl{text-align:right;padding-right:8px;font-size:10px}
+.la .r-ou td{background:#DDEBF7;font-weight:700;text-align:center;font-size:11px;padding:3px 4px}
+.la .r-ou .lbl{text-align:right;padding-right:8px;font-size:10px;color:var(--navy)}
+.la .r-ou td.pos{background:var(--over);color:var(--over-fg)}
+.la .r-ou td.neg{background:var(--under);color:var(--under-fg)}
+.la .r-ou td.zero{background:#FFFFCC;color:#666}
+
+/* sticky cols */
+.la .s0{position:sticky;left:0;z-index:3}
+.la .s1{position:sticky;left:42px;z-index:3}
+.la .s2{position:sticky;left:222px;z-index:3}
+/* stickied background inheritance fix */
+.la .r-job:nth-child(odd) td.s0,
+.la .r-job:nth-child(odd) td.s1,
+.la .r-job:nth-child(odd) td.s2{background:var(--row-alt)}
+.la .r-job:hover td.s0,
+.la .r-job:hover td.s1,
+.la .r-job:hover td.s2{background:#EBF3FB}
+
+/* col widths */
+.w-job{width:42px}.w-proj{width:180px}.w-crew{width:78px}
+.w-pm{width:72px}.w-odue{width:78px}.w-add{width:42px}
+.w-adue{width:78px}.w-drem{width:42px}.w-stat{width:48px}.w-imp{width:42px}
+
+/* super selector */
+.super-sel{
+  padding:5px 10px;border-radius:3px;border:1.5px solid var(--amber);
+  background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-family:inherit;
+  cursor:pointer;min-width:160px
+}
+.super-sel option{background:var(--navy);color:#fff}
+.super-sel:focus{outline:2px solid var(--amber)}
+/* highlighted rows for selected super */
+.r-job.is-mine td{background:#FFFDE7!important}
+.r-job.is-mine td.s0,.r-job.is-mine td.s1,.r-job.is-mine td.s2{background:#FFFDE7!important}
+.r-job.is-mine{outline:2px solid var(--amber2)}
+/* toast */
+#toast{
+  position:fixed;bottom:18px;right:18px;background:var(--navy);color:#fff;
+  padding:9px 18px;border-radius:5px;font-size:12px;opacity:0;
+  transition:opacity .3s;pointer-events:none;z-index:999
+}
+#toast.show{opacity:1}
+/* cloud status bar */
+#cloud-bar{
+  background:#e8f5e9;color:#2e7d32;font-size:11px;font-weight:600;
+  padding:4px 14px;display:none;align-items:center;gap:8px;
+  border-bottom:1px solid #a5d6a7
+}
+#cloud-bar.show{display:flex}
+
+/* ─── BETA BANNER ─────────────────────────────────────── */
+#beta-bar{
+  display:none;
+  background:#7B3010;color:#fff;
+  font-size:11px;font-weight:700;letter-spacing:.5px;
+  padding:5px 16px;text-align:center;
+  position:sticky;top:0;z-index:300;
+}
+#beta-bar.show{display:block}
+@media print{#beta-bar{display:none!important}}
+
+/* print */
+@media print{
+  #hdr .btn,.btn-del,.btn-add-row,.btn-add-job{display:none!important}
+  #hdr{position:static;background:#fff!important;color:var(--navy)!important}
+  #hdr h1{color:var(--navy)}
+  .sec{break-inside:avoid;box-shadow:none;border:1px solid #ccc}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<div id="beta-bar">⚠ BETA PREVIEW — Not for production use &nbsp;|&nbsp; Send feedback to Stephanie Jones</div>
+
+<div id="hdr">
+  <h1>Paragon Contractors — Look-Ahead Resource Report</h1>
+  <div class="ctrl">
+    <label>WEEK OF</label>
+    <input type="date" id="weekOf" />
+  </div>
+  <div class="ctrl">
+    <label>YOUR NAME</label>
+    <select id="superName" class="super-sel" onchange="onSuperChange(this.value)">
+      <option value="">— select —</option>
+      <option value="jared">Jared</option>
+      <option value="rolondo">Rolondo</option>
+      <option value="elijah">Elijah</option>
+      <option value="john">John</option>
+      <option value="jimmy">Jimmy</option>
+      <option value="randy">Randy</option>
+      <option value="sergio">Sergio</option>
+      <option value="anthony">Anthony</option>
+      <option value="rye">Rye</option>
+      <option value="miller">Miller</option>
+    </select>
+  </div>
+  <button class="btn btn-save" onclick="saveData()">☁ Save My Rows</button>
+  <button class="btn btn-load" onclick="loadData()">📂 Load My Rows</button>
+  <button class="btn btn-export" onclick="exportExcel()">⬇ Export Excel</button>
+  <button class="btn btn-print" onclick="window.print()">🖨 Print</button>
+</div>
+
+<div id="cloud-bar">
+  <span id="cloud-msg">✓ Saved to paragontulsaresults.com</span>
+</div>
+
+<div id="main"></div>
+<div id="toast"></div>
+
+<script>
+// Show beta banner on any non-production hostname
+(function(){
+  var host = window.location.hostname;
+  var isProd = (host === 'paragontulsaresults.com' || host === 'www.paragontulsaresults.com');
+  if(!isProd) document.getElementById('beta-bar').classList.add('show');
+})();
+
+// ─── DATA ──────────────────────────────────────────────────────────────────
+const SECTIONS = [
+  {id:'site',   label:'Paragon Site Crews',    capacity:10},
+  {id:'util',   label:'Paragon Utility Crews', capacity:25},
+  {id:'conc',   label:'Paragon Concrete Crews',capacity:10},
+  {id:'asph',   label:'Paragon Asphalt Crews', capacity:7},
+];
+
+const DEFAULT_JOBS = {
+  site:[
+    {jn:'565', pn:'Jenks-Elm Street',           crew:'Jared',   pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'571', pn:'BA - Jasper/Aspen',           crew:'Rolondo', pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'575', pn:'SGL Airport',                 crew:'Elijah',  pm:'Mike/Clint', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'574', pn:'COT 91st Street',             crew:'John',    pm:'Mike/Clint', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'577', pn:'Kirby-Smith Yard',            crew:'Jimmy',   pm:'',           od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'580', pn:'Jenks-Elm Street (6/15/2026)',crew:'Jared',   pm:'',           od:'06/15/2026', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'',    pn:'Rejoice Parking Lot',         crew:'',        pm:'',           od:'06/01/2026', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'',    pn:'Riverline Early Demo',        crew:'Sub',     pm:'',           od:'', ad:'', status:'SUB', imp:'', days:Array(15).fill('')},
+  ],
+  util:[
+    {jn:'566', pn:'COT Woodward Park',           crew:'Sergio',  pm:'Eric',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'564', pn:'MCC 24" Tie-In',             crew:'John',    pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'565', pn:'Jenks-Elm Street (Storm)',    crew:'Anthony', pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'574', pn:'COT 91st Street',             crew:'John',    pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'574', pn:'COT 91st Street (Sub)',       crew:'KSL',     pm:'Mike',       od:'', ad:'', status:'SUB', imp:'', days:Array(15).fill('')},
+    {jn:'478', pn:'Pine/Mingo Property',         crew:'',        pm:'',           od:'', ad:'', status:'HOLD', imp:'', days:Array(15).fill('')},
+  ],
+  conc:[
+    {jn:'565', pn:'Elm St',                      crew:'Randy',   pm:'',           od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'571', pn:'BA - Jasper/Aspen',           crew:'Randy',   pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'',    pn:'Muskogee Ave Punch List',     crew:'Randy',   pm:'',           od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'566', pn:'Woodward Park',               crew:'Miller',  pm:'Eric',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'',    pn:'SGL Airport',                 crew:'Randy',   pm:'',           od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+  ],
+  asph:[
+    {jn:'571', pn:'BA - Jasper/Aspen',           crew:'Rye',     pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'573', pn:'Averitt',                     crew:'Rye',     pm:'Eric',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'',    pn:'Berryhill - Sand Springs',    crew:'Rye',     pm:'',           od:'02/15/2026', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'',    pn:'Rejoice Parking Lot',         crew:'',        pm:'',           od:'06/01/2026', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'565', pn:'Jenks-Elm Street',            crew:'Jared',   pm:'',           od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+  ],
+};
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let state = {
+  weekOf: '',
+  superName: '',
+  sections: SECTIONS.map(s => ({
+    ...s,
+    jobs: DEFAULT_JOBS[s.id].map((j,i) => ({...j, _id: s.id+'_'+i, days:[...j.days]}))
+  }))
+};
+
+let _uid = 1000;
+function uid(){ return ++_uid; }
+
+// ─── DATE UTILS ─────────────────────────────────────────────────────────────
+function nextMonday(from){
+  const d = new Date(from || Date.now());
+  const dow = d.getDay(); // 0=Sun
+  const diff = dow === 1 ? 0 : (8 - dow) % 7 || 7;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().split('T')[0];
+}
+
+function getWeekDates(isoMonday){
+  if(!isoMonday) return Array(15).fill(null);
+  const dates = [];
+  const base = new Date(isoMonday + 'T12:00:00');
+  for(let w=0;w<3;w++){
+    for(let d=0;d<5;d++){
+      const dt = new Date(base);
+      dt.setDate(base.getDate() + w*7 + d);
+      dates.push(dt);
+    }
+  }
+  return dates;
+}
+
+function fmtDate(dt){
+  if(!dt) return '';
+  return (dt.getMonth()+1)+'/'+(dt.getDate());
+}
+
+function fmtFull(dt){
+  if(!dt) return '';
+  const m = dt.getMonth()+1, d = dt.getDate(), y = dt.getFullYear();
+  return m+'/'+d+'/'+y;
+}
+
+const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Mon','Tue','Wed','Thu','Fri','Mon','Tue','Wed','Thu','Fri'];
+
+// ─── CALC HELPERS ───────────────────────────────────────────────────────────
+function parseDay(v){
+  if(v===null||v===undefined||v==='') return 0;
+  if(typeof v === 'string' && v.toUpperCase()==='SUB') return 0;
+  const n = parseFloat(v);
+  return isNaN(n) ? 0 : n;
+}
+
+function calcRequired(jobs, colIdx){
+  return jobs.reduce((sum,j) => sum + parseDay(j.days[colIdx]), 0);
+}
+
+function adjDueDate(od, addDays){
+  if(!od) return '';
+  try{
+    const parts = od.split('/');
+    if(parts.length !== 3) return od;
+    const d = new Date(parseInt(parts[2]), parseInt(parts[0])-1, parseInt(parts[1]));
+    const add = parseInt(addDays)||0;
+    d.setDate(d.getDate() + add);
+    return (d.getMonth()+1)+'/'+(d.getDate())+'/'+d.getFullYear();
+  }catch{return od}
+}
+
+function daysRemaining(adjDue, weekOfIso){
+  if(!adjDue || !weekOfIso) return '';
+  try{
+    const parts = adjDue.split('/');
+    if(parts.length !== 3) return '';
+    const due = new Date(parseInt(parts[2]), parseInt(parts[0])-1, parseInt(parts[1]));
+    const ref = new Date(weekOfIso + 'T12:00:00');
+    return Math.round((due - ref)/(86400000));
+  }catch{return ''}
+}
+
+// ─── RENDER ─────────────────────────────────────────────────────────────────
+function render(){
+  const dates = getWeekDates(state.weekOf);
+  const weekLabel = state.weekOf
+    ? 'WEEK OF ' + (new Date(state.weekOf+'T12:00:00')).toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric'})
+    : 'WEEK OF ___';
+
+  document.title = 'Paragon Look-Ahead — ' + weekLabel;
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  // Report title bar
+  const title = document.createElement('div');
+  title.style.cssText='background:var(--navy2);color:#fff;padding:6px 12px;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;border-radius:4px;margin-bottom:12px;';
+  title.textContent = 'LOOK AHEAD RESOURCE REPORT — ' + weekLabel;
+  main.appendChild(title);
+
+  state.sections.forEach(sec => {
+    main.appendChild(buildSection(sec, dates));
+  });
+  // Re-apply super highlights after every render
+  setTimeout(highlightMyRows, 0);
+}
+
+function buildSection(sec, dates){
+  const card = document.createElement('div');
+  card.className = 'sec';
+  card.id = 'sec-'+sec.id;
+
+  // Section header
+  const sHdr = document.createElement('div');
+  sHdr.className = 'sec-hdr';
+  sHdr.innerHTML = `
+    <span class="sec-title">${sec.label}</span>
+    <span class="cap-ctrl">
+      <span>Headcount:</span>
+      <input type="number" min="0" max="999" value="${sec.capacity}"
+        onchange="updateCapacity('${sec.id}',this.value)" />
+    </span>
+    <button class="btn-add-job" onclick="addJob('${sec.id}')">+ Add Job</button>
+  `;
+  card.appendChild(sHdr);
+
+  // Table wrapper
+  const wrap = document.createElement('div');
+  wrap.className = 'tbl-wrap';
+
+  const tbl = document.createElement('table');
+  tbl.className = 'la';
+  tbl.innerHTML = buildThead(sec, dates) + buildTbody(sec, dates);
+  wrap.appendChild(tbl);
+  card.appendChild(wrap);
+  return card;
+}
+
+function buildThead(sec, dates){
+  const cap = sec.capacity;
+  const INFO_COLS = 10; // Job, ProjName, Crew, PM, ODue, AddDays, AdjDue, DaysRem, Status, Impact
+
+  // date cells
+  let weekCells = `<th class="info-cell" colspan="10">`;
+  weekCells += `</th>`;
+  weekCells += `<th colspan="5">WEEK 1</th><th colspan="5">WEEK 2</th><th colspan="5">WEEK 3</th>`;
+  weekCells += `<th style="font-size:9px;background:#344a6c">WEEK OF</th><th></th>`;
+
+  let dateCells = `<td class="info-cell" colspan="10">Date:</td>`;
+  for(let i=0;i<15;i++){
+    const d = dates[i];
+    dateCells += `<td>${d ? fmtDate(d) : ''}</td>`;
+  }
+  dateCells += `<td class="info-cell"></td><td></td>`;
+
+  // Headcount row (capacity per column)
+  let capCells = `<td class="info-cell" colspan="3">`;
+  capCells += `<b>${sec.label}</b></td>`;
+  capCells += `<td class="info-cell">Headcount:</td>`;
+  // remaining info cells
+  capCells += `<td class="info-cell" colspan="6"></td>`;
+  for(let i=0;i<15;i++) capCells += `<td>${cap}</td>`;
+  capCells += `<td class="info-cell"></td><td></td>`;
+
+  // Column header row
+  const cols = ['#','PROJECT NAME','CREW','PM / GS','ORIG DUE','ADD DAYS','ADJ DUE','DAYS REM','STATUS','IMPACT'];
+  let colHdrCells = cols.map((c,i) => {
+    const cls = ['w-job s0','w-proj s1','w-crew','w-pm','w-odue','w-add','w-adue','w-drem','w-stat','w-imp'][i] || '';
+    return `<th class="info-cell ${cls}">${c}</th>`;
+  }).join('');
+  for(let i=0;i<15;i++) colHdrCells += `<th>${DAY_LABELS[i]}</th>`;
+  colHdrCells += `<th></th><th></th>`;
+
+  return `<thead>
+    <tr class="r-week">${weekCells}</tr>
+    <tr class="r-dates">${dateCells}</tr>
+    <tr class="r-cap">${capCells}</tr>
+    <tr class="r-colhdr">${colHdrCells}</tr>
+  </thead>`;
+}
+
+function buildTbody(sec, dates){
+  let rows = '';
+
+  sec.jobs.forEach((job, jIdx) => {
+    rows += buildJobRow(sec, job, jIdx);
+  });
+
+  // Add row button
+  rows += `<tr class="r-add">
+    <td colspan="27">
+      <button class="btn-add-row" onclick="addJob('${sec.id}')">+ Add row</button>
+    </td>
+  </tr>`;
+
+  // Staff Required
+  const reqVals = Array.from({length:15}, (_,i) => calcRequired(sec.jobs, i));
+  let reqCells = `<td class="lbl" colspan="10">Staff Required</td>`;
+  reqCells += reqVals.map(v => `<td>${v||''}</td>`).join('');
+  reqCells += `<td></td><td></td>`;
+
+  // Staff Over/Under
+  const cap = sec.capacity;
+  let ouCells = `<td class="lbl" colspan="10">Staff Over / Under</td>`;
+  ouCells += reqVals.map(v => {
+    const ou = cap - v;
+    const cls = ou > 0 ? 'pos' : ou < 0 ? 'neg' : 'zero';
+    return `<td class="${cls}">${ou}</td>`;
+  }).join('');
+  ouCells += `<td></td><td></td>`;
+
+  rows += `<tr class="r-req">${reqCells}</tr>`;
+  rows += `<tr class="r-ou">${ouCells}</tr>`;
+
+  return `<tbody>${rows}</tbody>`;
+}
+
+function buildJobRow(sec, job, jIdx){
+  const adj = adjDueDate(job.od, job.ad);
+  const rem = daysRemaining(adj, state.weekOf);
+
+  const infoCells = [
+    {v:job.jn, k:'jn', cls:'w-job s0', type:'text'},
+    {v:job.pn, k:'pn', cls:'w-proj s1', type:'text'},
+    {v:job.crew, k:'crew', cls:'w-crew', type:'text'},
+    {v:job.pm, k:'pm', cls:'w-pm', type:'text'},
+    {v:job.od, k:'od', cls:'w-odue', type:'text', ph:'MM/DD/YYYY'},
+    {v:job.ad, k:'ad', cls:'w-add', type:'number'},
+    {v:adj,    k:null, cls:'w-adue', readonly:true, style:'color:#888;font-size:10px;padding:3px 5px'},
+    {v:rem,    k:null, cls:'w-drem', readonly:true, style:`color:${rem < 30 ? '#C00000' : '#375623'};font-size:10px;padding:3px 5px;font-weight:700`},
+    {v:job.status, k:'status', cls:'w-stat', type:'text'},
+    {v:job.imp, k:'imp', cls:'w-imp', type:'text'},
+  ];
+
+  const id = job._id;
+  let cells = infoCells.map(c => {
+    if(c.readonly){
+      return `<td class="info-cell ${c.cls}"><span style="${c.style||''}">${c.v}</span></td>`;
+    }
+    const onch = c.k ? `updateJobField('${sec.id}','${id}','${c.k}',this.value)` : '';
+    return `<td class="info-cell ${c.cls}">
+      <input class="fi ${c.cls}" type="${c.type||'text'}" value="${esc(c.v)}"
+        placeholder="${c.ph||''}" ${onch?`onchange="${onch}"`:''} />
+    </td>`;
+  }).join('');
+
+  // Day cells
+  cells += job.days.map((v,di) => {
+    const isSub = typeof v === 'string' && v.toUpperCase() === 'SUB';
+    const isZero = !v && v !== 0;
+    const cls = isSub ? 'is-sub' : (isZero ? 'is-zero' : '');
+    return `<td class="dc ${cls}" id="dc-${id}-${di}">
+      <input class="di" type="text" value="${v||''}"
+        onchange="updateDay('${sec.id}','${id}',${di},this.value)"
+        onkeydown="dayKeyNav(event,'${sec.id}','${id}',${di})"
+        onfocus="selectAll(this)" />
+    </td>`;
+  }).join('');
+
+  // Delete button
+  cells += `<td class="del-cell">
+    <button class="btn-del" onclick="deleteJob('${sec.id}','${id}')" title="Remove row">×</button>
+  </td>`;
+
+  return `<tr class="r-job" id="row-${id}">${cells}</tr>`;
+}
+
+function esc(s){ return (s||'').replace(/"/g,'&quot;') }
+
+// ─── ACTIONS ─────────────────────────────────────────────────────────────────
+function updateCapacity(secId, val){
+  const sec = state.sections.find(s=>s.id===secId);
+  if(sec) sec.capacity = parseInt(val)||0;
+  rebuildTbody(secId);
+}
+
+function updateJobField(secId, jobId, key, val){
+  const sec = state.sections.find(s=>s.id===secId);
+  const job = sec?.jobs.find(j=>j._id===jobId);
+  if(job){ job[key] = val; rebuildTbody(secId); }
+}
+
+function updateDay(secId, jobId, colIdx, val){
+  const sec = state.sections.find(s=>s.id===secId);
+  const job = sec?.jobs.find(j=>j._id===jobId);
+  if(!job) return;
+  job.days[colIdx] = val.trim();
+  // Update cell class
+  const cell = document.getElementById('dc-'+jobId+'-'+colIdx);
+  if(cell){
+    const isSub = val.trim().toUpperCase() === 'SUB';
+    const isEmpty = val.trim() === '';
+    cell.className = 'dc ' + (isSub ? 'is-sub' : isEmpty ? 'is-zero' : '');
+  }
+  rebuildTotals(secId);
+}
+
+function addJob(secId){
+  const sec = state.sections.find(s=>s.id===secId);
+  if(!sec) return;
+  sec.jobs.push({
+    _id: secId+'_'+uid(), jn:'', pn:'', crew:'', pm:'',
+    od:'', ad:'', status:'', imp:'', days:Array(15).fill('')
+  });
+  renderSection(secId);
+}
+
+function deleteJob(secId, jobId){
+  const sec = state.sections.find(s=>s.id===secId);
+  if(!sec) return;
+  sec.jobs = sec.jobs.filter(j=>j._id !== jobId);
+  renderSection(secId);
+}
+
+function rebuildTbody(secId){
+  const sec = state.sections.find(s=>s.id===secId);
+  if(!sec) return;
+  const tbl = document.querySelector('#sec-'+secId+' table.la');
+  if(!tbl) return;
+  const tbody = tbl.querySelector('tbody');
+  if(!tbody) return;
+  tbody.innerHTML = buildTbody(sec, getWeekDates(state.weekOf));
+}
+
+function rebuildTotals(secId){
+  const sec = state.sections.find(s=>s.id===secId);
+  if(!sec) return;
+  const cap = sec.capacity;
+  const rows = document.querySelectorAll(`#sec-${secId} .la .r-req td, #sec-${secId} .la .r-ou td`);
+  if(!rows.length) return rebuildTbody(secId);
+
+  const reqVals = Array.from({length:15}, (_,i) => calcRequired(sec.jobs, i));
+
+  // Update req row (cells 10..24)
+  const reqRow = document.querySelector(`#sec-${secId} .la .r-req`);
+  const ouRow = document.querySelector(`#sec-${secId} .la .r-ou`);
+  if(!reqRow || !ouRow) return;
+
+  const reqTds = reqRow.querySelectorAll('td');
+  const ouTds = ouRow.querySelectorAll('td');
+  reqVals.forEach((v,i) => {
+    if(reqTds[10+i]) reqTds[10+i].textContent = v||'';
+    if(ouTds[10+i]){
+      const ou = cap-v;
+      ouTds[10+i].textContent = ou;
+      ouTds[10+i].className = ou>0?'pos':ou<0?'neg':'zero';
+    }
+  });
+}
+
+function renderSection(secId){
+  const sec = state.sections.find(s=>s.id===secId);
+  const card = document.getElementById('sec-'+secId);
+  if(!card || !sec) return;
+  const wrap = card.querySelector('.tbl-wrap');
+  const scrollLeft = wrap ? wrap.scrollLeft : 0;
+  const dates = getWeekDates(state.weekOf);
+  const tbl = document.createElement('table');
+  tbl.className = 'la';
+  tbl.innerHTML = buildThead(sec, dates) + buildTbody(sec, dates);
+  if(wrap){ wrap.innerHTML = ''; wrap.appendChild(tbl); wrap.scrollLeft = scrollLeft; }
+}
+
+function selectAll(el){ el.select && el.select(); }
+
+function dayKeyNav(e, secId, jobId, colIdx){
+  if(e.key==='Tab'||e.key==='ArrowRight'){
+    if(!e.shiftKey){ e.preventDefault(); focusDay(secId, jobId, colIdx+1); }
+  } else if(e.key==='ArrowLeft'){
+    e.preventDefault(); focusDay(secId, jobId, colIdx-1);
+  } else if(e.key==='ArrowDown' || e.key==='Enter'){
+    e.preventDefault();
+    const sec = state.sections.find(s=>s.id===secId);
+    const jIdx = sec?.jobs.findIndex(j=>j._id===jobId);
+    if(sec && jIdx < sec.jobs.length-1){
+      focusDayById(sec.jobs[jIdx+1]._id, colIdx);
+    }
+  } else if(e.key==='ArrowUp'){
+    e.preventDefault();
+    const sec = state.sections.find(s=>s.id===secId);
+    const jIdx = sec?.jobs.findIndex(j=>j._id===jobId);
+    if(sec && jIdx > 0){
+      focusDayById(sec.jobs[jIdx-1]._id, colIdx);
+    }
+  }
+}
+
+function focusDay(secId, jobId, colIdx){
+  if(colIdx<0||colIdx>14) return;
+  focusDayById(jobId, colIdx);
+}
+
+function focusDayById(jobId, colIdx){
+  const cell = document.getElementById('dc-'+jobId+'-'+colIdx);
+  if(cell){ const inp = cell.querySelector('input'); if(inp){ inp.focus(); inp.select(); } }
+}
+
+// ─── SUPER SELECTION ─────────────────────────────────────────────────────────
+function onSuperChange(superVal){
+  state.superName = superVal;
+  highlightMyRows();
+}
+
+function myCrewNames(){
+  const s = (state.superName||'').toLowerCase();
+  if(!s) return [];
+  // map super slug to possible crew field values
+  const MAP = {
+    jared:   ['jared'],
+    rolondo: ['rolondo'],
+    elijah:  ['elijah'],
+    john:    ['john'],
+    jimmy:   ['jimmy'],
+    randy:   ['randy'],
+    sergio:  ['sergio'],
+    anthony: ['anthony'],
+    rye:     ['rye'],
+    miller:  ['miller'],
+  };
+  return MAP[s] || [s];
+}
+
+function isMyRow(job){
+  const names = myCrewNames();
+  if(!names.length) return false;
+  const crew = (job.crew||'').toLowerCase();
+  return names.some(n => crew.includes(n));
+}
+
+function highlightMyRows(){
+  document.querySelectorAll('.r-job').forEach(tr => {
+    tr.classList.remove('is-mine');
+  });
+  if(!state.superName) return;
+  state.sections.forEach(sec => {
+    sec.jobs.forEach(job => {
+      if(isMyRow(job)){
+        const tr = document.getElementById('row-'+job._id);
+        if(tr) tr.classList.add('is-mine');
+      }
+    });
+  });
+}
+
+// ─── SAVE / LOAD ─────────────────────────────────────────────────────────────
+async function saveData(){
+  const superName = state.superName;
+  if(!superName){
+    toast('Select your name first.');
+    return;
+  }
+  const week = state.weekOf;
+  if(!week){
+    toast('Select a week first.');
+    return;
+  }
+
+  // Collect only this super's rows
+  const rows = [];
+  state.sections.forEach(sec => {
+    sec.jobs.forEach(job => {
+      if(isMyRow(job)){
+        rows.push({
+          sec: sec.id,
+          jobRef: (job.jn||'') + '|' + (job.pn||''),
+          jn: job.jn,
+          pn: job.pn,
+          crew: job.crew,
+          days: [...job.days],
+        });
+      }
+    });
+  });
+
+  if(!rows.length){
+    toast('No rows found for ' + superName + '. Check your crew name matches.');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/blobs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ week, super: superName, rows }),
+    });
+    const data = await res.json();
+    if(data.ok){
+      const bar = document.getElementById('cloud-bar');
+      document.getElementById('cloud-msg').textContent =
+        '✓ ' + superName.charAt(0).toUpperCase()+superName.slice(1) +
+        ' — ' + rows.length + ' row' + (rows.length>1?'s':'') + ' saved for week of ' + week;
+      bar.classList.add('show');
+      setTimeout(()=>bar.classList.remove('show'), 5000);
+      toast('Saved to site ✓');
+    } else {
+      toast('Save failed: ' + (data.error||'unknown error'));
+    }
+  } catch(e) {
+    toast('Save failed: ' + e.message);
+  }
+}
+
+async function loadData(){
+  const superName = state.superName;
+  if(!superName){ toast('Select your name first.'); return; }
+  const week = state.weekOf;
+  if(!week){ toast('Select a week first.'); return; }
+
+  try {
+    const res = await fetch(`/api/blobs?week=${week}&super=${superName}`);
+    const data = await res.json();
+    if(!data || !data.rows || !data.rows.length){
+      toast('No saved data found for ' + superName + ' / ' + week);
+      return;
+    }
+    // Apply rows back into state
+    data.rows.forEach(saved => {
+      const sec = state.sections.find(s => s.id === saved.sec);
+      if(!sec) return;
+      const job = sec.jobs.find(j =>
+        ((j.jn||'')+'|'+(j.pn||'')) === saved.jobRef
+      );
+      if(job){ job.days = saved.days; }
+    });
+    render();
+    highlightMyRows();
+    toast('Loaded ' + data.rows.length + ' row(s) for ' + superName + ' ✓');
+  } catch(e) {
+    toast('Load failed: ' + e.message);
+  }
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+let _toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>el.classList.remove('show'), 2500);
+}
+
+// ─── EXCEL EXPORT ─────────────────────────────────────────────────────────────
+// Generates a styled HTML-to-XLS file matching the master schedule format
+function exportExcel(){
+  const dates = getWeekDates(state.weekOf);
+  const weekLabel = state.weekOf
+    ? 'WEEK OF '+(new Date(state.weekOf+'T12:00:00')).toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric'})
+    : 'WEEK OF ___';
+
+  const N = '#1F3864', N2 = '#2F5496';
+  const CAP_BG = '#FCE4D6', HDR_BG = '#BDD7EE', HDR_BG2 = '#9DC3E6';
+  const DATE_BG = '#D6DCE4', REQ_BG = '#DDEBF7';
+  const OVER = '#C6EFCE', OVER_FG = '#375623', UNDER = '#FFC7CE', UNDER_FG = '#9C0006';
+
+  const css = `
+    <style>
+    body { font-family: Calibri, Arial; font-size: 11pt; }
+    table { border-collapse: collapse; }
+    td, th { border: 1px solid #B8B8B8; padding: 2px 5px; white-space: nowrap; font-size: 8.5pt; }
+    .navy { background: ${N}; color: #FFF; font-weight: bold; }
+    .navy2 { background: ${N2}; color: #FFF; font-weight: bold; }
+    .date-bg { background: ${DATE_BG}; color: ${N}; font-weight: bold; text-align: center; font-size: 8pt; }
+    .cap-bg { background: ${CAP_BG}; font-weight: bold; text-align: center; }
+    .hdr-bg { background: ${HDR_BG}; color: ${N}; font-weight: bold; text-align: center; font-size: 8pt; text-transform: uppercase; }
+    .hdr-bg2 { background: ${HDR_BG2}; color: ${N}; font-weight: bold; }
+    .req-bg { background: ${REQ_BG}; font-weight: bold; text-align: center; }
+    .over { background: ${OVER}; color: ${OVER_FG}; font-weight: bold; text-align: center; }
+    .under { background: ${UNDER}; color: ${UNDER_FG}; font-weight: bold; text-align: center; }
+    .zero-ou { background: #FFFFCC; text-align: center; }
+    .sub-cell { background: #FFFF00; font-weight: bold; text-align: center; }
+    .num-cell { text-align: center; }
+    .lbl-r { text-align: right; font-weight: bold; }
+    .info-hdr { font-weight: bold; background: ${N2}; color: #FFF; }
+    </style>`;
+
+  let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:x="urn:schemas-microsoft-com:office:excel">
+    <head><meta charset="utf-8">${css}</head><body>`;
+
+  // Title
+  html += `<table><tr><td colspan="27" class="navy" style="font-size:11pt;padding:5px 8px;">
+    LOOK AHEAD RESOURCE REPORT — ${weekLabel}</td></tr></table><br/>`;
+
+  state.sections.forEach(sec => {
+    const cap = sec.capacity;
+    const reqVals = Array.from({length:15}, (_,i)=>calcRequired(sec.jobs, i));
+
+    html += `<table>`;
+
+    // Row 1: Section title + week labels
+    html += `<tr>
+      <td colspan="10" class="navy" style="text-align:left">${sec.label}</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 1</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 2</td>
+      <td colspan="5" class="navy" style="text-align:center">WEEK 3</td>
+      <td class="navy" style="font-size:8pt">WEEK OF</td>
+      <td class="navy"></td>
+    </tr>`;
+
+    // Row 2: Dates
+    html += `<tr><td colspan="10" class="date-bg" style="text-align:right">Date:</td>`;
+    for(let i=0;i<15;i++) html += `<td class="date-bg">${dates[i]?fmtDate(dates[i]):''}</td>`;
+    html += `<td class="date-bg">${dates[0]?fmtFull(dates[0]):''}</td><td></td></tr>`;
+
+    // Row 3: Headcount
+    html += `<tr>
+      <td colspan="3" class="cap-bg hdr-bg2">${sec.label}</td>
+      <td class="cap-bg" style="text-align:left;font-weight:bold">Headcount:</td>
+      <td colspan="6" class="cap-bg"></td>`;
+    for(let i=0;i<15;i++) html += `<td class="cap-bg">${cap}</td>`;
+    html += `<td></td><td></td></tr>`;
+
+    // Row 4: Column headers
+    const colHdrs = ['#','PROJECT NAME','CREW','PM/GS','ORIG DUE','ADD DAYS','ADJ DUE','DAYS REM','STATUS','IMPACT'];
+    html += `<tr>`;
+    colHdrs.forEach(h => html += `<th class="hdr-bg2" style="text-align:left">${h}</th>`);
+    for(let i=0;i<15;i++) html += `<th class="hdr-bg">${DAY_LABELS[i]}</th>`;
+    html += `<th class="hdr-bg"></th><th></th></tr>`;
+
+    // Job rows
+    sec.jobs.forEach(job => {
+      const adj = adjDueDate(job.od, job.ad);
+      const rem = daysRemaining(adj, state.weekOf);
+      const remStyle = rem!=='' && parseInt(rem)<30 ? 'color:#C00000;font-weight:bold' : 'color:#375623';
+
+      html += `<tr>
+        <td>${esc2(job.jn)}</td>
+        <td>${esc2(job.pn)}</td>
+        <td>${esc2(job.crew)}</td>
+        <td>${esc2(job.pm)}</td>
+        <td style="text-align:center">${esc2(job.od)}</td>
+        <td class="num-cell">${esc2(job.ad)}</td>
+        <td style="text-align:center;font-size:8pt;color:#666">${esc2(adj)}</td>
+        <td class="num-cell" style="${remStyle}">${rem!==''?rem:''}</td>
+        <td style="text-align:center">${esc2(job.status)}</td>
+        <td class="num-cell">${esc2(job.imp)}</td>`;
+
+      for(let i=0;i<15;i++){
+        const v = job.days[i]||'';
+        const isSub = typeof v==='string' && v.toUpperCase()==='SUB';
+        const cls = isSub ? 'sub-cell' : (v ? 'num-cell' : '');
+        html += `<td class="${cls}">${v}</td>`;
+      }
+      html += `<td></td><td></td></tr>`;
+    });
+
+    // Staff Required
+    html += `<tr><td colspan="10" class="lbl-r req-bg">Staff Required</td>`;
+    reqVals.forEach(v => html += `<td class="req-bg">${v||''}</td>`);
+    html += `<td></td><td></td></tr>`;
+
+    // Staff Over/Under
+    html += `<tr><td colspan="10" class="lbl-r req-bg">Staff Over / Under</td>`;
+    reqVals.forEach(v => {
+      const ou = cap - v;
+      const cls = ou>0?'over':ou<0?'under':'zero-ou';
+      html += `<td class="${cls}">${ou}</td>`;
+    });
+    html += `<td></td><td></td></tr>`;
+
+    html += `</table><br/>`;
+  });
+
+  html += '</body></html>';
+
+  const blob = new Blob([html], {type:'application/vnd.ms-excel'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const wo = state.weekOf ? state.weekOf.replace(/-/g,'') : 'NoDate';
+  a.href = url;
+  a.download = `Paragon_LookAhead_${wo}.xls`;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 5000);
+  toast('Excel file downloaded.');
+}
+
+function esc2(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+(function init(){
+  // Try to load saved state from localStorage (offline fallback only)
+  try{
+    const raw = localStorage.getItem('paragon_la');
+    if(raw){
+      const saved = JSON.parse(raw);
+      // Only restore week and superName from local — not data (that lives in the cloud now)
+      if(saved.weekOf) state.weekOf = saved.weekOf;
+      if(saved.superName) state.superName = saved.superName;
+    }
+  }catch(e){}
+
+  const woEl = document.getElementById('weekOf');
+  if(!state.weekOf){
+    state.weekOf = nextMonday();
+    const today = new Date();
+    if(today.getDay() === 1){
+      state.weekOf = today.toISOString().split('T')[0];
+    }
+  }
+  woEl.value = state.weekOf;
+
+  // Restore super selector
+  if(state.superName){
+    const sel = document.getElementById('superName');
+    if(sel) sel.value = state.superName;
+  }
+
+  // Persist week + superName to localStorage on change (lightweight)
+  document.getElementById('weekOf').addEventListener('change', function(){
+    state.weekOf = this.value;
+    localStorage.setItem('paragon_la', JSON.stringify({weekOf:state.weekOf, superName:state.superName}));
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

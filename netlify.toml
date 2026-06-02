@@ -2,6 +2,12 @@
   publish = "."
   functions = "netlify/functions"
 
+[context.branch-deploy]
+  publish = "."
+
+[context.deploy-preview]
+  publish = "."
+
 [functions]
   node_bundler = "esbuild"
 
