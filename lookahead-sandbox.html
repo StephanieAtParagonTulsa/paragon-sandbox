@@ -286,8 +286,8 @@ td.del-cell{width:22px;text-align:center;padding:1px}
 // Show beta banner on any non-production hostname
 (function(){
   var host = window.location.hostname;
-  var isProd = (host === 'paragontulsaresults.com' || host === 'www.paragontulsaresults.com');
-  if(!isProd) document.getElementById('beta-bar').classList.add('show');
+  var isSandbox = window.location.pathname.toLowerCase().includes('sandbox');
+  if(isSandbox) document.getElementById('beta-bar').classList.add('show');
 })();
 
 // ─── DATA ──────────────────────────────────────────────────────────────────
