@@ -100,10 +100,13 @@ async function handleWip(event, params) {
 
 async function handleCrew(event, params) {
   const store = getCrewStore();
-  const { week, super: superName } = params;
+  const { week, super: superName, sandbox } = params;
+
+  // Sandbox requests use a "sandbox:" prefix so they never collide with production keys
+  const ns = sandbox === "true" ? "sandbox:" : "";
 
   if (event.httpMethod === "GET" && superName) {
-    const key = week + ":" + superName;
+    const key = ns + week + ":" + superName;
     let data = null;
     try {
       const raw = await store.get(key);
@@ -114,15 +117,16 @@ async function handleCrew(event, params) {
   }
 
   if (event.httpMethod === "GET" && week) {
+    const prefix = ns + week + ":";
     let blobs = [];
     try {
-      const r = await store.list({ prefix: week + ":" });
+      const r = await store.list({ prefix });
       blobs = r.blobs || [];
       console.log("list count:", blobs.length);
     } catch(e) { console.log("list error:", e.message); }
     const out = {};
     await Promise.all(blobs.map(async (b) => {
-      const name = b.key.slice((week + ":").length);
+      const name = b.key.slice(prefix.length);
       try {
         const raw = await store.get(b.key);
         if (raw) out[name] = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -133,8 +137,9 @@ async function handleCrew(event, params) {
 
   if (event.httpMethod === "POST") {
     const body = JSON.parse(event.body || "{}");
-    const { week: w, super: s, rows } = body;
-    const key = w + ":" + s;
+    const { week: w, super: s, rows, sandbox: sbx } = body;
+    const keyNs = sbx === true ? "sandbox:" : "";
+    const key = keyNs + w + ":" + s;
     const value = JSON.stringify({ week: w, super: s, rows, updated: new Date().toISOString() });
     console.log("POST key:", key, "len:", value.length);
     await store.set(key, value);

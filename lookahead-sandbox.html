@@ -892,7 +892,7 @@ async function saveData(){
     const res = await fetch('/api/blobs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ week, super: superName, rows }),
+      body: JSON.stringify({ week, super: superName, rows, sandbox: true }),
     });
     const data = await res.json();
     if(data.ok){
@@ -918,7 +918,7 @@ async function loadData(){
   if(!week){ toast('Select a week first.'); return; }
 
   try {
-    const res = await fetch(`/api/blobs?week=${week}&super=${superName}`);
+    const res = await fetch(`/api/blobs?week=${week}&super=${superName}&sandbox=true`);
     const data = await res.json();
     if(!data || !data.rows || !data.rows.length){
       toast('No saved data found for ' + superName + ' / ' + week);
