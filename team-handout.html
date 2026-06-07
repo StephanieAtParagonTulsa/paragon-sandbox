@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Paragon Ops Hub — Team Handout</title>
+<style>
+/* ── RESET ── */
+*{box-sizing:border-box;margin:0;padding:0}
+
+/* ── FORCE ALL BACKGROUNDS TO PRINT ── */
+*{
+  -webkit-print-color-adjust:exact !important;
+  print-color-adjust:exact !important;
+  color-adjust:exact !important;
+}
+
+/* ── SCREEN WRAPPER ── */
+body{
+  font-family:'Segoe UI',Arial,Helvetica,sans-serif;
+  background:#CBD5E1;
+  color:#1a2535;
+}
+
+/* ── PRINT BUTTON BAR (screen only) ── */
+#pbar{
+  background:#1F3864;
+  padding:9px 20px;
+  display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:99;
+}
+#pbar button{
+  background:#E8402A;color:#fff;border:none;border-radius:4px;
+  padding:8px 22px;font-size:13px;font-weight:800;cursor:pointer;
+  letter-spacing:.5px;text-transform:uppercase;
+}
+#pbar button:hover{background:#C7321F}
+#pbar span{font-size:11px;color:#9DC3E6}
+#pbar strong{color:#FFD966}
+
+/* ── PAGE ── */
+.page{
+  width:10in;margin:14px auto;background:#fff;
+  padding:.42in .48in .38in;
+  box-shadow:0 6px 30px rgba(0,0,0,.22);
+}
+
+/* ── HEADER ── */
+.hdr{
+  background:#0D2137;
+  border-radius:6px;
+  padding:14px 18px 12px;
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:11px;
+  border-left:6px solid #E8402A;
+}
+.hdr-eyebrow{
+  font-size:8.5px;letter-spacing:2.5px;text-transform:uppercase;
+  color:#E8402A;font-weight:800;margin-bottom:4px;
+}
+.hdr-title{
+  font-size:26px;font-weight:900;color:#FFFFFF;
+  letter-spacing:.3px;line-height:1;
+}
+.hdr-sub{font-size:10px;color:#9DC3E6;margin-top:5px}
+.hdr-right{text-align:right}
+.hdr-url-lbl{font-size:8px;color:#9DC3E6;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.hdr-url{font-size:16px;font-weight:900;color:#FFD966;letter-spacing:.3px}
+#qr{margin-top:7px;display:block;margin-left:auto}
+
+/* ── INTRO STRIP ── */
+.intro{
+  background:#1F3864;
+  border-left:5px solid #E8402A;
+  border-radius:0 4px 4px 0;
+  padding:8px 14px;
+  margin-bottom:11px;
+  font-size:11.5px;color:#fff;
+}
+.intro strong{color:#FFD966}
+
+/* ── THREE COLUMNS ── */
+.cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+
+/* ── CARD ── */
+.card{border-radius:6px;overflow:hidden;border:2px solid #CBD5E1;display:flex;flex-direction:column}
+
+/* Card header */
+.ch{padding:10px 14px 8px;color:#fff}
+.ch .role{font-size:8px;letter-spacing:2px;text-transform:uppercase;opacity:.85;margin-bottom:2px;font-weight:700}
+.ch .who{font-size:18px;font-weight:900;line-height:1.1;color:#fff}
+.ch .names{font-size:8.5px;color:rgba(255,255,255,.78);margin-top:3px;font-style:italic}
+
+/* Card body */
+.cb{padding:10px 14px 8px;flex:1;background:#fff;display:flex;flex-direction:column;gap:8px}
+.curl{font-size:9px;font-weight:800;padding:4px 9px;border-radius:3px;display:inline-block;letter-spacing:.1px;word-break:break-all}
+
+/* Steps */
+.steps{list-style:none;display:flex;flex-direction:column;gap:7px}
+.steps li{display:flex;gap:8px;align-items:flex-start;font-size:10.5px;line-height:1.45;color:#1a2535}
+.sn{
+  flex-shrink:0;width:18px;height:18px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:900;color:#fff;margin-top:1px;
+}
+
+/* Card footer note */
+.cf{font-size:9px;color:#666;font-style:italic;border-top:1px solid #E2E8F0;padding:6px 14px;background:#F8FAFD}
+
+/* ── COLOR THEMES ── */
+/* Management — Navy */
+.mgmt .ch{background:#1B3A6B}
+.mgmt .curl{background:#DBEAFE;color:#1B3A6B}
+.mgmt .sn{background:#1B3A6B}
+.mgmt{border-color:#1B3A6B}
+
+/* Supers — Brand Blue */
+.supr .ch{background:#185FA5}
+.supr .curl{background:#DBEAFE;color:#185FA5}
+.supr .sn{background:#185FA5}
+.supr{border-color:#185FA5}
+
+/* Crew Leads — Utility Green */
+.crew .ch{background:#0F6E56}
+.crew .curl{background:#D1FAE5;color:#0F6E56}
+.crew .sn{background:#0F6E56}
+.crew{border-color:#0F6E56}
+
+/* ── FLOW DIAGRAM ── */
+.flow{
+  background:#F1F5FB;border:1.5px solid #CBD5E1;
+  border-radius:6px;padding:9px 12px;margin-bottom:10px;
+}
+.flow-lbl{
+  font-size:8.5px;font-weight:900;text-transform:uppercase;
+  letter-spacing:1.5px;color:#1B3A6B;margin-bottom:7px;
+}
+.flow-row{display:flex;align-items:stretch;gap:0}
+.fbox{
+  background:#fff;border:1.5px solid #CBD5E1;border-radius:5px;
+  padding:7px 10px;text-align:center;flex:1;
+}
+.fbox .fr{font-size:7.5px;text-transform:uppercase;letter-spacing:.8px;color:#64748B;margin-bottom:2px;font-weight:700}
+.fbox .fn{font-size:11.5px;font-weight:900;color:#1a2535}
+.fbox .fd{font-size:9px;color:#64748B;margin-top:1px}
+.farr{font-size:22px;color:#E8402A;padding:0 8px;display:flex;align-items:center;font-weight:900;flex-shrink:0}
+
+/* ── PAGE FOOTER ── */
+.pgf{
+  text-align:center;font-size:8.5px;color:#94A3B8;
+  letter-spacing:.5px;text-transform:uppercase;
+  border-top:1px solid #E2E8F0;padding-top:8px;
+}
+
+/* ── PRINT OVERRIDES ── */
+@media print{
+  body{background:#fff}
+  #pbar{display:none!important}
+  .page{
+    margin:0;box-shadow:none;
+    width:100%;padding:.3in .35in .25in;
+  }
+  /* Re-assert all background colors explicitly for print */
+  .hdr{background:#0D2137 !important;border-left-color:#E8402A !important}
+  .hdr-title{color:#fff !important}
+  .hdr-url{color:#FFD966 !important}
+  .hdr-eyebrow{color:#E8402A !important}
+  .hdr-sub{color:#9DC3E6 !important}
+  .hdr-url-lbl{color:#9DC3E6 !important}
+  .intro{background:#1F3864 !important;color:#fff !important;border-left-color:#E8402A !important}
+  .intro strong{color:#FFD966 !important}
+  .mgmt .ch{background:#1B3A6B !important}
+  .mgmt .ch *{color:#fff !important}
+  .supr .ch{background:#185FA5 !important}
+  .supr .ch *{color:#fff !important}
+  .crew .ch{background:#0F6E56 !important}
+  .crew .ch *{color:#fff !important}
+  .mgmt .sn{background:#1B3A6B !important;color:#fff !important}
+  .supr .sn{background:#185FA5 !important;color:#fff !important}
+  .crew .sn{background:#0F6E56 !important;color:#fff !important}
+  .mgmt .curl{background:#DBEAFE !important;color:#1B3A6B !important}
+  .supr .curl{background:#DBEAFE !important;color:#185FA5 !important}
+  .crew .curl{background:#D1FAE5 !important;color:#0F6E56 !important}
+  .cf{background:#F8FAFD !important}
+  .flow{background:#F1F5FB !important}
+  .fbox{background:#fff !important}
+}
+</style>
+</head>
+<body>
+
+<!-- PRINT BAR (screen only) -->
+<div id="pbar">
+  <button onclick="window.print()">🖨 Print / Save as PDF</button>
+  <span>In print dialog: set <strong>Background graphics = ON</strong> · Destination → <strong>Save as PDF</strong></span>
+</div>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div>
+      <div class="hdr-eyebrow">Paragon Contractors · Tulsa, OK · June 4, 2026</div>
+      <div class="hdr-title">Operations Hub</div>
+      <div class="hdr-sub">Internal scheduling &amp; project tools · Quick reference for all team members</div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-url-lbl">Your URL — bookmark this</div>
+      <div class="hdr-url">paragontulsaresults.com</div>
+      <canvas id="qr" width="76" height="76"></canvas>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="intro">
+    📱 &nbsp;<strong>One URL for everyone.</strong>
+    &nbsp;Open on any phone or browser — no app, no login, no install.
+    &nbsp;Bookmark: <strong>paragontulsaresults.com</strong>
+  </div>
+
+  <!-- ROLE COLUMNS -->
+  <div class="cols">
+
+    <!-- MANAGEMENT -->
+    <div class="card mgmt">
+      <div class="ch">
+        <div class="role">👁 Viewer</div>
+        <div class="who">Management</div>
+        <div class="names">Tyler Rogers &nbsp;·&nbsp; Dale Forrest</div>
+      </div>
+      <div class="cb">
+        <div class="curl">paragontulsaresults.com</div>
+        <ul class="steps">
+          <li><div class="sn">1</div><span>Open the hub — click <strong>3-Week Look-Ahead</strong> to see the current crew resource report</span></li>
+          <li><div class="sn">2</div><span>Pick the <strong>Week Of</strong> date to view any week's submissions</span></li>
+          <li><div class="sn">3</div><span>Click <strong>⬇ Export Excel</strong> to download the master schedule in the format you know</span></li>
+        </ul>
+      </div>
+      <div class="cf">Read-only &nbsp;·&nbsp; No data entry required</div>
+    </div>
+
+    <!-- SUPERS -->
+    <div class="card supr">
+      <div class="ch">
+        <div class="role">✏️ Weekly Input</div>
+        <div class="who">Supers</div>
+        <div class="names">Jared · Rolondo · Elijah · John · Jimmy · Randy · Sergio · Anthony · Rye · Miller</div>
+      </div>
+      <div class="cb">
+        <div class="curl">paragontulsaresults.com/lookahead.html</div>
+        <ul class="steps">
+          <li><div class="sn">1</div><span>Pick your <strong>name</strong> and the <strong>Week Of</strong> — your jobs filter to just your rows</span></li>
+          <li><div class="sn">2</div><span>Type crew count per day — <strong>Tab</strong> or <strong>Enter</strong> to advance. <strong style="color:#375623">Green</strong> = done.</span></li>
+          <li><div class="sn">3</div><span>Click <strong>☁ Save My Rows</strong> — data is live immediately</span></li>
+        </ul>
+      </div>
+      <div class="cf">Fill out once per week &nbsp;·&nbsp; Takes ~2 minutes</div>
+    </div>
+
+    <!-- CREW LEADS -->
+    <div class="card crew">
+      <div class="ch">
+        <div class="role">🔧 Task Entry · In Review</div>
+        <div class="who">Crew Leads</div>
+        <div class="names">John &nbsp;·&nbsp; KSL &nbsp;·&nbsp; VSF &nbsp;·&nbsp; Foremen</div>
+      </div>
+      <div class="cb">
+        <div class="curl">paragontulsaresults.com/job-detail-sandbox.html</div>
+        <ul class="steps">
+          <li><div class="sn">1</div><span>Pick your <strong>Job</strong>, then your <strong>Crew Lead</strong> name — only your tasks show</span></li>
+          <li><div class="sn">2</div><span>Enter headcount per day — <strong>Tab</strong> to advance. Text labels (KSL, SUB) are valid.</span></li>
+          <li><div class="sn">3</div><span>Click <strong>Save</strong> — task data rolls up into the crew report automatically</span></li>
+        </ul>
+      </div>
+      <div class="cf">New tool &nbsp;·&nbsp; Feedback welcome this week</div>
+    </div>
+
+  </div>
+
+  <!-- FLOW -->
+  <div class="flow">
+    <div class="flow-lbl">How it all connects</div>
+    <div class="flow-row">
+      <div class="fbox">
+        <div class="fr">Crew Leads enter</div>
+        <div class="fn">Job Detail</div>
+        <div class="fd">Task-level headcounts</div>
+      </div>
+      <div class="farr">→</div>
+      <div class="fbox">
+        <div class="fr">Supers review &amp; save</div>
+        <div class="fn">3-Week Look-Ahead</div>
+        <div class="fd">Crew section totals</div>
+      </div>
+      <div class="farr">→</div>
+      <div class="fbox">
+        <div class="fr">Management sees</div>
+        <div class="fn">Export / Gantt</div>
+        <div class="fd">Master schedule · Excel</div>
+      </div>
+      <div class="farr">→</div>
+      <div class="fbox" style="border-color:#1B3A6B;background:#EEF3FB">
+        <div class="fr" style="color:#1B3A6B">Always available at</div>
+        <div class="fn" style="color:#1B3A6B">paragontulsaresults.com</div>
+        <div class="fd">Any device · No login</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pgf">Paragon Contractors &nbsp;·&nbsp; Internal Use Only &nbsp;·&nbsp; paragontulsaresults.com &nbsp;·&nbsp; Questions: Stephanie Jones</div>
+
+</div>
+
+<script>
+// Draw QR code via Google Charts — silent fallback to text if blocked
+(function(){
+  var c = document.getElementById('qr');
+  var ctx = c.getContext('2d');
+  var url = 'https://paragontulsaresults.com';
+  var img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function(){ ctx.drawImage(img,0,0,76,76); };
+  img.onerror = function(){
+    ctx.fillStyle='#0D2137';
+    ctx.fillRect(0,0,76,76);
+    ctx.fillStyle='#FFD966';
+    ctx.font='bold 7px Arial';
+    ctx.textAlign='center';
+    ctx.fillText('paragontulsa',38,34);
+    ctx.fillText('results.com',38,44);
+    ctx.font='6px Arial';
+    ctx.fillStyle='#9DC3E6';
+    ctx.fillText('scan URL above',38,58);
+  };
+  img.src='https://chart.googleapis.com/chart?cht=qr&chs=76x76&chl='+encodeURIComponent(url)+'&choe=UTF-8&chld=M|1';
+})();
+</script>
+</body>
+</html>

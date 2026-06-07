@@ -8,7 +8,7 @@
 
 ## ⚡ Current State — update this every session
 
-**Last updated:** 2026-06-02
+**Last updated:** 2026-06-03
 **Updated by:** Claude Code (Stephanie's machine)
 
 | Item | Status |
@@ -17,12 +17,12 @@
 | **Where the work is happening** | Claude Code (on Stephanie's machine) |
 | **Beta URL** | `paragontulsaresults.com/lookahead-sandbox.html` — brown banner = sandbox |
 | **Production URL** | `paragontulsaresults.com/lookahead.html` — live, frozen until v2 approved |
-| **Open risk** | ⚠ Sandbox writes to SAME blob namespace as production — must fix before reviewers enter data |
+| **Open risk** | ✅ Blob isolation confirmed — sandbox keys prefixed with `sandbox:` on both client and server; no collision with production |
 | **Last deploy** | 2026-06-02 — `lookahead-sandbox.html` deployed to prod via `netlify deploy --prod` |
 | **Git repo** | `github.com/StephanieAtParagonTulsa/paragon-sandbox`, branch `lookahead-v2` |
 | **Files touched this session** | `lookahead-sandbox.html`, `netlify.toml`, `package.json`, `.gitignore`, `.gitattributes` |
 
-**Next up:** Fix blob isolation — sandbox should write to a `sandbox:` key prefix so reviewer test data never touches production blob keys. Then share beta URL with Tyler/Dale/Jared.
+**Next up:** Share beta URL with Tyler/Dale/Jared. Blob isolation is confirmed — safe for reviewers to enter test data.
 
 ---
 
@@ -162,7 +162,7 @@ Same domain, two pages, easy to remember:
 
 ## Rollout Checklist
 
-- [ ] Confirm sandbox blob isolation before reviewers touch beta
+- [x] Confirm sandbox blob isolation before reviewers touch beta
 - [ ] Fill in admin phone number in `SuperFieldCard.html` "Questions?" line
 - [ ] Print and laminate `SuperFieldCard.html` for each site trailer
 - [ ] Share `Paragon_GanttViewerGuide.docx` with Tyler and Dale
@@ -178,6 +178,7 @@ Same domain, two pages, easy to remember:
 | May 2026 | Initial build — SuperFieldCard.html, GanttViewerGuide.docx, CrewSchedule_AdminGuide.docx |
 | 2026-06-02 (morning) | Code port complete; beta/production split set up; brief restructured around two-surface workflow |
 | 2026-06-02 (afternoon) | Git init paragon-deploy; pushed to github.com/StephanieAtParagonTulsa/paragon-sandbox; created threeweekbeta Netlify site; built v2 UI (Enter→right nav, yellow active cell, green done cells, My Jobs Only toggle, hint bar); sandbox deployed to paragontulsaresults.com/lookahead-sandbox.html |
+| 2026-06-03 | Confirmed blob isolation — `sandbox:` key prefix already implemented in both client (lookahead-sandbox.html) and server (blobs.js); no production data risk. Brief updated. |
 
 *Add a row whenever work ships.*
 

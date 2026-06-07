@@ -44,7 +44,6 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#E4E8F0;color:#1a1a1a;mi
 .btn-export{background:var(--amber);color:var(--navy)}
 .btn-save{background:#70AD47;color:#fff}
 .btn-load{background:#fff;color:var(--navy)}
-.btn-rollup{background:#9DC3E6;color:var(--navy)}
 .btn-print{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35)}
 
 /* ─── MAIN ────────────────────────────────────────────── */
@@ -236,91 +235,6 @@ td.del-cell{width:22px;text-align:center;padding:1px}
   .sec{break-inside:avoid;box-shadow:none;border:1px solid #ccc}
   body{background:#fff}
 }
-
-/* ─── MOBILE (<768px) ─────────────────────────────────── */
-@media(max-width:767px){
-  /* Header reflow */
-  #hdr{padding:8px 10px;gap:8px}
-  #hdr h1{font-size:12px;min-width:0;flex:0 0 100%}
-  .ctrl label{font-size:10px}
-  .ctrl input[type=date]{font-size:11px;padding:3px 6px}
-  /* Hide desktop-only controls on mobile */
-  .btn-export,.btn-print,.btn-rollup,
-  #focusToggle,.btn-load{display:none!important}
-  /* Guide bar hidden on mobile */
-  #guide-bar{display:none}
-  /* Desktop main hidden when mobile cards active */
-  #main.m-hidden{display:none}
-  /* Mobile save bar */
-  #mobile-save-bar{display:flex}
-  /* Mobile cards container */
-  #mobile-cards{display:block;padding:10px 10px 80px}
-}
-@media(min-width:768px){
-  #mobile-cards{display:none!important}
-  #mobile-save-bar{display:none!important}
-}
-
-/* ─── MOBILE SAVE BAR ────────────────────────────────── */
-#mobile-save-bar{
-  display:none;
-  position:fixed;bottom:0;left:0;right:0;z-index:250;
-  background:var(--navy);padding:10px 14px;
-  gap:10px;align-items:center;
-  box-shadow:0 -3px 12px rgba(0,0,0,.25);
-}
-#mobile-save-bar .btn-save{
-  flex:1;padding:12px;font-size:14px;border-radius:6px;
-  text-align:center;letter-spacing:.5px;
-}
-#mobile-save-bar .m-week-label{
-  font-size:10px;color:rgba(255,255,255,.6);white-space:nowrap
-}
-
-/* ─── MOBILE CARDS ───────────────────────────────────── */
-.m-card{
-  background:#fff;border-radius:10px;margin-bottom:12px;
-  box-shadow:0 2px 10px rgba(0,0,0,.12);overflow:hidden;
-}
-.m-card-hdr{
-  background:var(--navy);color:#fff;
-  padding:11px 14px 9px;
-}
-.m-job-name{font-size:14px;font-weight:800;line-height:1.2}
-.m-job-meta{font-size:10px;opacity:.7;margin-top:3px}
-.m-week-block{padding:10px 12px;border-bottom:1px solid var(--border)}
-.m-week-block:last-child{border-bottom:none}
-.m-wk-lbl{
-  font-size:9px;font-weight:700;text-transform:uppercase;
-  letter-spacing:1.2px;color:#888;margin-bottom:8px;
-  display:flex;justify-content:space-between;align-items:center;
-}
-.m-wk-lbl span{font-weight:400;color:#aaa;font-size:9px}
-.m-days{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
-.m-day{display:flex;flex-direction:column;align-items:center;gap:3px}
-.m-day-lbl{font-size:8.5px;color:#888;text-transform:uppercase;letter-spacing:.5px;text-align:center}
-.m-day-date{font-size:8px;color:#bbb;display:block;text-align:center}
-.m-day input{
-  width:100%;height:52px;text-align:center;
-  font-size:20px;font-weight:800;
-  border:2px solid #D3DFF0;border-radius:8px;
-  background:#F8FAFD;font-family:inherit;
-  color:var(--navy);
-  -webkit-appearance:none;appearance:none;
-}
-.m-day input:focus{
-  outline:none;border-color:#4472C4;
-  background:#FFE600;color:#000;
-}
-.m-day input.m-done{background:var(--over);border-color:#70AD47;color:var(--over-fg)}
-.m-day input.m-sub{background:var(--sub);border-color:#BFA000;color:#000}
-.m-day input.m-empty{background:#F8FAFD}
-
-/* No-jobs message */
-.m-no-jobs{
-  text-align:center;padding:50px 20px;color:#888;
-  font-size:14px;line-height:1.6;
-}
 </style>
 </head>
 <body>
@@ -352,7 +266,6 @@ td.del-cell{width:22px;text-align:center;padding:1px}
   <button id="focusToggle" onclick="toggleFocusMode()" title="Show only your rows">👁 My Jobs Only</button>
   <button class="btn btn-save" onclick="saveData()">☁ Save My Rows</button>
   <button class="btn btn-load" onclick="loadData()">📂 Load My Rows</button>
-  <button class="btn btn-rollup" onclick="importFromJobDetail()" title="Pull aggregated data from Job Detail entries">⬆ Import Job Detail</button>
   <button class="btn btn-export" onclick="exportExcel()">⬇ Export Excel</button>
   <button class="btn btn-print" onclick="window.print()">🖨 Print</button>
 </div>
@@ -367,16 +280,6 @@ td.del-cell{width:22px;text-align:center;padding:1px}
 </div>
 
 <div id="main"></div>
-
-<!-- Mobile card view — shown on <768px when super + focus mode active -->
-<div id="mobile-cards"></div>
-
-<!-- Mobile sticky save bar -->
-<div id="mobile-save-bar">
-  <span class="m-week-label" id="m-week-label">—</span>
-  <button class="btn btn-save" onclick="saveData()">☁ Save My Rows</button>
-</div>
-
 <div id="toast"></div>
 
 <script>
@@ -892,7 +795,6 @@ function applyFocusMode(){
     const card = document.getElementById('sec-'+sec.id);
     if(card) card.classList.toggle('sec-hidden', focusMode && !anyVisible);
   });
-  switchView();
 }
 
 // ─── SUPER SELECTION ─────────────────────────────────────────────────────────
@@ -907,7 +809,7 @@ function onSuperChange(superVal){
     document.getElementById('focusToggle').classList.remove('active');
   }
   highlightMyRows();
-  applyFocusMode(); // applyFocusMode calls switchView() at the end
+  applyFocusMode();
 }
 
 function myCrewNames(){
@@ -949,167 +851,6 @@ function highlightMyRows(){
       }
     });
   });
-}
-
-// ─── MOBILE VIEW ─────────────────────────────────────────────────────────────
-function isMobileViewport(){ return window.innerWidth < 768; }
-
-function shouldShowMobile(){
-  return isMobileViewport() && focusMode && !!state.superName;
-}
-
-function switchView(){
-  const mobile = shouldShowMobile();
-  document.getElementById('main').classList.toggle('m-hidden', mobile);
-  if(mobile){
-    renderMobileCards();
-    // Update week label in save bar
-    const wl = state.weekOf
-      ? 'Week of ' + (new Date(state.weekOf+'T12:00:00')).toLocaleDateString('en-US',{month:'numeric',day:'numeric'})
-      : '—';
-    document.getElementById('m-week-label').textContent = wl;
-  } else {
-    document.getElementById('mobile-cards').innerHTML = '';
-  }
-}
-
-function renderMobileCards(){
-  const dates  = getWeekDates(state.weekOf);
-  const cont   = document.getElementById('mobile-cards');
-  const myJobs = [];
-  state.sections.forEach(sec => {
-    sec.jobs.forEach(job => {
-      if(isMyRow(job)) myJobs.push({ sec, job });
-    });
-  });
-
-  if(!myJobs.length){
-    cont.innerHTML = `<div class="m-no-jobs">
-      No jobs found for <strong>${state.superName}</strong> this week.<br>
-      Check that your crew name matches a row, or add a row in the full view.
-    </div>`;
-    return;
-  }
-
-  cont.innerHTML = myJobs.map(({ sec, job }) => buildMobileCard(sec, job, dates)).join('');
-}
-
-function buildMobileCard(sec, job, dates){
-  const weeks = [
-    { label:'Week 1', start:0 },
-    { label:'Week 2', start:5 },
-    { label:'Week 3', start:10 },
-  ];
-
-  const weekBlocks = weeks.map(w => {
-    const days = Array.from({length:5}, (_,i) => {
-      const di  = w.start + i;
-      const v   = job.days[di];
-      const val = (v === null || v === undefined) ? '' : String(v);
-      const isSub  = val.toUpperCase() === 'SUB';
-      const isDone = val !== '' && !isSub;
-      const cls    = isSub ? 'm-sub' : isDone ? 'm-done' : 'm-empty';
-      const d      = dates[di];
-      return `<div class="m-day">
-        <div class="m-day-lbl">${DAY_LABELS[di]}<span class="m-day-date">${d ? fmtDate(d) : ''}</span></div>
-        <input class="${cls}" type="text" inputmode="numeric"
-          value="${esc(val)}" id="mdc-${job._id}-${di}"
-          onfocus="this.select()"
-          onblur="mUpdateDay('${sec.id}','${job._id}',${di},this.value)"
-          onkeydown="mDayKeyNav(event,'${job._id}',${di})">
-      </div>`;
-    }).join('');
-
-    const d0 = dates[w.start], d4 = dates[w.start+4];
-    const range = (d0 && d4) ? fmtDate(d0)+' – '+fmtDate(d4) : '';
-    return `<div class="m-week-block">
-      <div class="m-wk-lbl">${w.label} <span>${range}</span></div>
-      <div class="m-days">${days}</div>
-    </div>`;
-  }).join('');
-
-  const jLabel = (job.jn ? job.jn + ' — ' : '') + (job.pn || '');
-  return `<div class="m-card" id="mcard-${job._id}">
-    <div class="m-card-hdr">
-      <div class="m-job-name">${esc(jLabel)}</div>
-      <div class="m-job-meta">Crew: ${esc(job.crew||'—')} &nbsp;·&nbsp; PM: ${esc(job.pm||'—')} &nbsp;·&nbsp; ${esc(sec.label)}</div>
-    </div>
-    ${weekBlocks}
-  </div>`;
-}
-
-function mUpdateDay(secId, jobId, colIdx, val){
-  updateDay(secId, jobId, colIdx, val); // reuses full state update + rebuildTotals
-  const inp = document.getElementById('mdc-'+jobId+'-'+colIdx);
-  if(inp){
-    const isSub  = val.toUpperCase()==='SUB';
-    const isDone = val !== '' && !isSub;
-    inp.className = isSub ? 'm-sub' : isDone ? 'm-done' : 'm-empty';
-  }
-}
-
-function mDayKeyNav(e, jobId, colIdx){
-  if(e.key==='Enter' || e.key==='Tab'){
-    e.preventDefault();
-    const all = Array.from(document.querySelectorAll('#mobile-cards input'));
-    const cur = document.getElementById('mdc-'+jobId+'-'+colIdx);
-    const nxt = all[all.indexOf(cur) + (e.shiftKey ? -1 : 1)];
-    if(nxt){ nxt.focus(); nxt.select(); }
-  }
-}
-
-// fmtDate helper (mobile uses same format as table)
-function fmtDate(d){ return d ? (d.getMonth()+1)+'/'+(d.getDate()) : ''; }
-
-// Resize listener — switch view if user rotates device
-window.addEventListener('resize', ()=>{ if(state.superName) switchView(); });
-
-// ─── ROLLUP IMPORT ───────────────────────────────────────────────────────────
-// Pulls all job-detail saves for the current week and merges them into the
-// crew sections. Existing rows with the same job number are updated in place;
-// new jobs are appended. Supers can still override any cell manually afterward.
-async function importFromJobDetail(){
-  const week = state.weekOf;
-  if(!week){ toast('Select a week first.'); return; }
-  try{
-    const res = await fetch(`/api/blobs?week=${encodeURIComponent(week)}&rollup=true&sandbox=true`);
-    if(!res.ok) throw new Error(await res.text());
-    const data = await res.json();
-    if(!data.sections || !Object.keys(data.sections).length){
-      toast('No job-detail data saved for this week yet.');
-      return;
-    }
-    let imported = 0;
-    Object.entries(data.sections).forEach(([secId, secData]) => {
-      const sec = state.sections.find(s => s.id === secId);
-      if(!sec) return;
-      (secData.rows || []).forEach(row => {
-        // Find existing job row by job number, or append
-        let job = sec.jobs.find(j => j.jn && j.jn === row.jn);
-        if(!job){
-          job = { _id: secId+'_'+uid(), jn:row.jn, pn:row.pn, crew:row.crew||'',
-                  pm:row.pm||'', od:'', ad:'', status:'', imp:'',
-                  days: Array(15).fill('') };
-          sec.jobs.push(job);
-        } else {
-          // Update metadata fields, preserve any manual day overrides
-          if(row.pn)   job.pn   = row.pn;
-          if(row.crew) job.crew = row.crew;
-          if(row.pm)   job.pm   = row.pm;
-        }
-        // Merge days: job-detail value wins for non-zero, blank otherwise
-        row.days.forEach((v, i) => {
-          if(v !== 0 && v !== '' && v !== null) job.days[i] = v;
-        });
-        imported++;
-      });
-    });
-    render();
-    toast(`Imported ${imported} job row${imported!==1?'s':''} from Job Detail ✓`);
-  }catch(err){
-    toast('Import failed: '+err.message);
-    console.error(err);
-  }
 }
 
 // ─── SAVE / LOAD ─────────────────────────────────────────────────────────────

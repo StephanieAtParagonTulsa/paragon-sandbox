@@ -100,10 +100,65 @@ async function handleWip(event, params) {
 
 async function handleCrew(event, params) {
   const store = getCrewStore();
-  const { week, super: superName, sandbox } = params;
+  const { week, super: superName, job: jobNum, sandbox } = params;
 
   // Sandbox requests use a "sandbox:" prefix so they never collide with production keys
   const ns = sandbox === "true" ? "sandbox:" : "";
+
+  // ── Rollup: GET /api/blobs?week=<iso>&rollup=true  ──────────────────────
+  // Returns all job-detail saves for the week, aggregated into crew sections
+  if (params.rollup === "true" && event.httpMethod === "GET") {
+    const prefix = ns + "job:" + week + ":";
+    let blobs = [];
+    try { const r = await store.list({ prefix }); blobs = r.blobs || []; } catch(e) {}
+    const jobs = [];
+    await Promise.all(blobs.map(async (b) => {
+      try {
+        const raw = await store.get(b.key);
+        if (raw) jobs.push(typeof raw === "string" ? JSON.parse(raw) : raw);
+      } catch {}
+    }));
+    // Aggregate: one row per job, days = sum of numeric task.days per column
+    const sections = {};
+    jobs.forEach(({ jobMeta, tasks }) => {
+      if (!jobMeta || !tasks) return;
+      const sec = jobMeta.section || "site";
+      if (!sections[sec]) sections[sec] = { cap: jobMeta.cap, rows: [] };
+      const days = Array(15).fill(0);
+      tasks.forEach(t => {
+        (t.days || []).forEach((v, i) => { const n = parseFloat(v); if (!isNaN(n)) days[i] += n; });
+      });
+      sections[sec].rows.push({
+        jn: jobMeta.jn, pn: jobMeta.pn, crew: jobMeta.primaryCrew || "",
+        pm: jobMeta.pm, days
+      });
+    });
+    return { statusCode: 200, headers, body: JSON.stringify({ week, sections }) };
+  }
+
+  // ── Job-detail routes (job= param present) ──────────────────────────────
+  if (jobNum !== undefined) {
+    if (event.httpMethod === "GET") {
+      const key = ns + "job:" + week + ":" + jobNum;
+      let data = null;
+      try {
+        const raw = await store.get(key);
+        if (raw !== null && raw !== undefined) data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      } catch(e) { console.log("job GET error:", e.message); }
+      if (!data) return { statusCode: 404, headers, body: JSON.stringify({ error: "Not found" }) };
+      return { statusCode: 200, headers, body: JSON.stringify(data) };
+    }
+    if (event.httpMethod === "POST") {
+      const body = JSON.parse(event.body || "{}");
+      const { week: w, job: jn, jobMeta, tasks, sandbox: sbx } = body;
+      const keyNs = sbx === true ? "sandbox:" : "";
+      const key = keyNs + "job:" + w + ":" + jn;
+      const value = JSON.stringify({ week: w, job: jn, jobMeta, tasks, updated: new Date().toISOString() });
+      await store.set(key, value);
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, key }) };
+    }
+  }
+
 
   if (event.httpMethod === "GET" && superName) {
     const key = ns + week + ":" + superName;
