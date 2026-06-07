@@ -35,6 +35,10 @@ Rolling 3-week input window: 15 weekday columns (Mon–Fri × 3) anchored on a "
 | Deploy command | `netlify deploy --prod` |
 | Netlify Site ID | `d5746cd2-17b6-4e09-a348-9619018b738f` |
 | Blob store | `lookahead` (all schedule data) |
+| GitHub (production) | `https://github.com/StephanieAtParagonTulsa/paragon-sandbox` — remote: `upstream` |
+| GitHub (dev fork) | `https://github.com/Artsy4U/paragon-sandbox` — remote: `origin` (dolan.todar) |
+| Active branch | `lookahead-v2` |
+| Git workflow | Commit to `lookahead-v2` → push to `upstream` → PR into `upstream/main` when ready |
 
 ### Blob key namespaces — never collide
 | Data type | Key pattern |
