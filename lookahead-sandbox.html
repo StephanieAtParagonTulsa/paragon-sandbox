@@ -290,6 +290,14 @@ td.del-cell{width:22px;text-align:center;padding:1px}
   if(isSandbox) document.getElementById('beta-bar').classList.add('show');
 })();
 
+// ─── BLOB STORE — sandbox isolation ────────────────────────────────────────
+// All blob calls must go through blobUrl() — never raw '/api/blobs'
+const BLOBS_ENV = 'sandbox';
+function blobUrl(params = {}) {
+  const q = new URLSearchParams({ env: BLOBS_ENV, ...params });
+  return '/api/blobs?' + q.toString();
+}
+
 // ─── DATA ──────────────────────────────────────────────────────────────────
 const SECTIONS = [
   {id:'site',   label:'Paragon Site Crews',    capacity:10},
@@ -889,10 +897,10 @@ async function saveData(){
   }
 
   try {
-    const res = await fetch('/api/blobs', {
+    const res = await fetch(blobUrl(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ week, super: superName, rows, sandbox: true }),
+      body: JSON.stringify({ week, super: superName, rows }),
     });
     const data = await res.json();
     if(data.ok){
@@ -918,7 +926,7 @@ async function loadData(){
   if(!week){ toast('Select a week first.'); return; }
 
   try {
-    const res = await fetch(`/api/blobs?week=${week}&super=${superName}&sandbox=true`);
+    const res = await fetch(blobUrl({ week, super: superName }));
     const data = await res.json();
     if(!data || !data.rows || !data.rows.length){
       toast('No saved data found for ' + superName + ' / ' + week);

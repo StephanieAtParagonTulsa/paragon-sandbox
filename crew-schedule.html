@@ -241,6 +241,13 @@
 <div class="legend" id="legend"></div>
 
 <script>
+// env param from URL — ?env=sandbox shows sandbox store; absent/other → prod (read-only affordance)
+const BLOBS_ENV = new URLSearchParams(location.search).get('env') || 'prod';
+function blobUrl(params = {}) {
+  const q = new URLSearchParams({ env: BLOBS_ENV, ...params });
+  return '/api/blobs?' + q.toString();
+}
+
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const CREWS = {
@@ -543,7 +550,7 @@ async function loadLiveData() {
   const week = picker ? picker.value : currentMonday();
   if(!week){ alert('Select a week first.'); return; }
   try {
-    const res = await fetch(`/api/blobs?week=${week}`);
+    const res = await fetch(blobUrl({ week }));
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const allSupers = await res.json();
     if (!allSupers || !Object.keys(allSupers).length) {

@@ -10,8 +10,10 @@ const headers = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-function getCrewStore() {
-  return getStore({ name: "lookahead", siteID: SITE_ID, token: process.env.NETLIFY_ACCESS_TOKEN });
+function getCrewStore(env) {
+  // env='sandbox' → physically separate store; anything else → production store (name unchanged)
+  const name = (env === 'sandbox') ? 'lookahead-sandbox' : 'lookahead';
+  return getStore({ name, siteID: SITE_ID, token: process.env.NETLIFY_ACCESS_TOKEN });
 }
 
 function getWipStore() {
@@ -99,10 +101,12 @@ async function handleWip(event, params) {
 // ── Crew Schedule handlers ────────────────────────────────────────────────────
 
 async function handleCrew(event, params) {
-  const store = getCrewStore();
+  // env param selects the blob store; unknown/absent → prod (safe fallback)
+  const env = (params.env || 'prod').toLowerCase();
+  const store = getCrewStore(env === 'sandbox' ? 'sandbox' : 'prod');
   const { week, super: superName, job: jobNum, sandbox } = params;
 
-  // Sandbox requests use a "sandbox:" prefix so they never collide with production keys
+  // Legacy key-prefix isolation (job-detail-sandbox.html still uses ?sandbox=true / body sandbox:true)
   const ns = sandbox === "true" ? "sandbox:" : "";
 
   // ── Rollup: GET /api/blobs?week=<iso>&rollup=true  ──────────────────────
