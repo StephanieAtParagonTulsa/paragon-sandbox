@@ -10,8 +10,10 @@ const headers = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-function getCrewStore() {
-  return getStore({ name: "lookahead", siteID: SITE_ID, token: process.env.NETLIFY_ACCESS_TOKEN });
+function getCrewStore(env) {
+  // env='sandbox' → physically separate store; anything else → production store (name unchanged)
+  const name = (env === 'sandbox') ? 'lookahead-sandbox' : 'lookahead';
+  return getStore({ name, siteID: SITE_ID, token: process.env.NETLIFY_ACCESS_TOKEN });
 }
 
 function getWipStore() {
@@ -99,11 +101,102 @@ async function handleWip(event, params) {
 // ── Crew Schedule handlers ────────────────────────────────────────────────────
 
 async function handleCrew(event, params) {
-  const store = getCrewStore();
-  const { week, super: superName } = params;
+  // env param selects the blob store; unknown/absent → prod (safe fallback)
+  const env = (params.env || 'prod').toLowerCase();
+  const store = getCrewStore(env === 'sandbox' ? 'sandbox' : 'prod');
+  const { week, super: superName, job: jobNum, sandbox } = params;
+
+
+  // ── Baseline routes ──────────────────────────────────────────────────────
+  // GET  ?baseline=current  → return active baseline JSON
+  // POST {baseline, sections} → write baseline:{cutDate} then baseline:current
+  if (params.baseline !== undefined && event.httpMethod === "GET") {
+    try {
+      const ptr = await store.get("baseline:current");
+      if (!ptr) return { statusCode: 404, headers, body: JSON.stringify({ error: "No baseline found" }) };
+      const cutDate = typeof ptr === "string" ? ptr.trim() : String(ptr);
+      const raw = await store.get("baseline:" + cutDate);
+      if (!raw) return { statusCode: 404, headers, body: JSON.stringify({ error: "Baseline data missing" }) };
+      const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      return { statusCode: 200, headers, body: JSON.stringify(data) };
+    } catch (err) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    }
+  }
+
+  if (event.httpMethod === "POST") {
+    let body;
+    try { body = JSON.parse(event.body || "{}"); } catch (_) { body = {}; }
+    if (body.baseline) {
+      const { baseline: cutDate, sections } = body;
+      if (!cutDate || !sections) return { statusCode: 400, headers, body: JSON.stringify({ error: "baseline and sections required" }) };
+      // Write data first, then pointer — if pointer write fails, data is still safe
+      await store.set("baseline:" + cutDate, JSON.stringify({ cutDate, sections, savedAt: new Date().toISOString() }));
+      await store.set("baseline:current", cutDate);
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, cutDate }) };
+    }
+  }
+
+  // Legacy key-prefix isolation (job-detail-sandbox.html still uses ?sandbox=true / body sandbox:true)
+  const ns = sandbox === "true" ? "sandbox:" : "";
+
+  // ── Rollup: GET /api/blobs?week=<iso>&rollup=true  ──────────────────────
+  // Returns all job-detail saves for the week, aggregated into crew sections
+  if (params.rollup === "true" && event.httpMethod === "GET") {
+    const prefix = ns + "job:" + week + ":";
+    let blobs = [];
+    try { const r = await store.list({ prefix }); blobs = r.blobs || []; } catch(e) {}
+    const jobs = [];
+    await Promise.all(blobs.map(async (b) => {
+      try {
+        const raw = await store.get(b.key);
+        if (raw) jobs.push(typeof raw === "string" ? JSON.parse(raw) : raw);
+      } catch {}
+    }));
+    // Aggregate: one row per job, days = sum of numeric task.days per column
+    const sections = {};
+    jobs.forEach(({ jobMeta, tasks }) => {
+      if (!jobMeta || !tasks) return;
+      const sec = jobMeta.section || "site";
+      if (!sections[sec]) sections[sec] = { cap: jobMeta.cap, rows: [] };
+      const days = Array(15).fill(0);
+      tasks.forEach(t => {
+        (t.days || []).forEach((v, i) => { const n = parseFloat(v); if (!isNaN(n)) days[i] += n; });
+      });
+      sections[sec].rows.push({
+        jn: jobMeta.jn, pn: jobMeta.pn, crew: jobMeta.primaryCrew || "",
+        pm: jobMeta.pm, days
+      });
+    });
+    return { statusCode: 200, headers, body: JSON.stringify({ week, sections }) };
+  }
+
+  // ── Job-detail routes (job= param present) ──────────────────────────────
+  if (jobNum !== undefined) {
+    if (event.httpMethod === "GET") {
+      const key = ns + "job:" + week + ":" + jobNum;
+      let data = null;
+      try {
+        const raw = await store.get(key);
+        if (raw !== null && raw !== undefined) data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      } catch(e) { console.log("job GET error:", e.message); }
+      if (!data) return { statusCode: 404, headers, body: JSON.stringify({ error: "Not found" }) };
+      return { statusCode: 200, headers, body: JSON.stringify(data) };
+    }
+    if (event.httpMethod === "POST") {
+      const body = JSON.parse(event.body || "{}");
+      const { week: w, job: jn, jobMeta, tasks, sandbox: sbx } = body;
+      const keyNs = sbx === true ? "sandbox:" : "";
+      const key = keyNs + "job:" + w + ":" + jn;
+      const value = JSON.stringify({ week: w, job: jn, jobMeta, tasks, updated: new Date().toISOString() });
+      await store.set(key, value);
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, key }) };
+    }
+  }
+
 
   if (event.httpMethod === "GET" && superName) {
-    const key = week + ":" + superName;
+    const key = ns + week + ":" + superName;
     let data = null;
     try {
       const raw = await store.get(key);
@@ -114,15 +207,16 @@ async function handleCrew(event, params) {
   }
 
   if (event.httpMethod === "GET" && week) {
+    const prefix = ns + week + ":";
     let blobs = [];
     try {
-      const r = await store.list({ prefix: week + ":" });
+      const r = await store.list({ prefix });
       blobs = r.blobs || [];
       console.log("list count:", blobs.length);
     } catch(e) { console.log("list error:", e.message); }
     const out = {};
     await Promise.all(blobs.map(async (b) => {
-      const name = b.key.slice((week + ":").length);
+      const name = b.key.slice(prefix.length);
       try {
         const raw = await store.get(b.key);
         if (raw) out[name] = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -132,14 +226,47 @@ async function handleCrew(event, params) {
   }
 
   if (event.httpMethod === "POST") {
-    const body = JSON.parse(event.body || "{}");
-    const { week: w, super: s, rows } = body;
-    const key = w + ":" + s;
-    const value = JSON.stringify({ week: w, super: s, rows, updated: new Date().toISOString() });
+    let body;
+    try { body = JSON.parse(event.body || "{}"); } catch(_) { body = {}; }
+
+    // ── Merge route: POST ?merge=true — read-overlay-write in one invocation ──
+    // Closes the stale-read window for Review Mode (Mike) saves.
+    if (params.merge === "true") {
+      const { week: w, owner, rows: inRows, savedBy: sb, status: st } = body;
+      if (!w || !owner || !Array.isArray(inRows))
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "week, owner, rows required" }) };
+      const key = w + ":" + owner;
+      // Fresh read of current blob
+      let existing = { week: w, super: owner, rows: [] };
+      try {
+        const raw = await store.get(key);
+        if (raw) existing = typeof raw === "string" ? JSON.parse(raw) : raw;
+      } catch(_) {}
+      // Overlay: replace rows whose jobRef appears in inRows, append new ones
+      const inMap = new Map(inRows.map(r => [r.jobRef, r]));
+      const merged = (existing.rows || []).map(r => inMap.has(r.jobRef) ? { ...r, ...inMap.get(r.jobRef) } : r);
+      inRows.forEach(r => { if (!merged.find(m => m.jobRef === r.jobRef)) merged.push(r); });
+      const savedAt = new Date().toISOString();
+      const value = JSON.stringify({ week: w, super: owner, rows: merged, savedBy: sb || owner, savedAt, status: st || "draft", updated: savedAt });
+      await store.set(key, value);
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, key, savedAt, rowsWritten: inRows.length }) };
+    }
+
+    const { week: w, super: s, rows, sandbox: sbx, savedBy, status } = body;
+    const keyNs = sbx === true ? "sandbox:" : "";
+    const key = keyNs + w + ":" + s;
+    const savedAt = new Date().toISOString();
+    const value = JSON.stringify({
+      week: w, super: s, rows,
+      savedBy: savedBy || s,          // who triggered the save (may differ from blob owner in Review Mode)
+      savedAt,                         // authoritative server-side timestamp
+      status:  status  || 'draft',     // draft | submitted (reserved for future use)
+      updated: savedAt,                // kept for backward compat
+    });
     console.log("POST key:", key, "len:", value.length);
     await store.set(key, value);
     console.log("set() done");
-    return { statusCode: 200, headers, body: JSON.stringify({ ok: true, key }) };
+    return { statusCode: 200, headers, body: JSON.stringify({ ok: true, key, savedAt }) };
   }
 
   return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };

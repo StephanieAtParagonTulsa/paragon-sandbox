@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paragon — 3-Week Look-Ahead</title>
+<title>Paragon — 3-Week Look-Ahead [BETA]</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -44,6 +44,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#E4E8F0;color:#1a1a1a;mi
 .btn-export{background:var(--amber);color:var(--navy)}
 .btn-save{background:#70AD47;color:#fff}
 .btn-load{background:#fff;color:var(--navy)}
+.btn-rollup{background:#9DC3E6;color:var(--navy)}
 .btn-print{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35)}
 
 /* ─── MAIN ────────────────────────────────────────────── */
@@ -123,10 +124,14 @@ input.di{
   width:100%;height:26px;border:none;background:transparent;
   text-align:center;font-size:11px;font-family:inherit;outline:none;cursor:pointer
 }
-input.di:focus{background:#EBF3FB;outline:1px solid var(--navy3)}
+input.di:focus{background:#FFE600;outline:3px solid #E65C00;outline-offset:-1px;font-weight:700}
 td.dc.is-sub{background:var(--sub)}
 td.dc.is-sub input.di{background:transparent;font-weight:700;color:#333}
+td.dc.is-sub input.di:focus{background:#FFE600}
 td.dc.is-zero input.di{color:#ccc}
+td.dc.dc-done{background:var(--over)}
+td.dc.dc-done input.di{color:var(--over-fg);font-weight:600}
+td.dc.dc-done input.di:focus{background:#FFE600;color:#333}
 
 /* delete button */
 td.del-cell{width:22px;text-align:center;padding:1px}
@@ -179,6 +184,24 @@ td.del-cell{width:22px;text-align:center;padding:1px}
 .r-job.is-mine td{background:#FFFDE7!important}
 .r-job.is-mine td.s0,.r-job.is-mine td.s1,.r-job.is-mine td.s2{background:#FFFDE7!important}
 .r-job.is-mine{outline:2px solid var(--amber2)}
+/* focus mode — hidden rows */
+.r-job.row-hidden{display:none}
+.sec.sec-hidden{display:none}
+/* focus mode toggle button */
+#focusToggle{
+  padding:5px 11px;border-radius:3px;border:1.5px solid var(--amber);
+  background:rgba(255,255,255,.12);color:#fff;font-size:11px;font-weight:700;
+  cursor:pointer;letter-spacing:.3px;white-space:nowrap
+}
+#focusToggle.active{background:var(--amber);color:var(--navy)}
+/* hint bar */
+#guide-bar{
+  background:#FFF8E1;border-bottom:2px solid var(--amber);
+  color:#5D4037;font-size:11px;padding:6px 16px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap
+}
+#guide-bar b{color:var(--navy)}
+@media print{#guide-bar{display:none!important}}
 /* toast */
 #toast{
   position:fixed;bottom:18px;right:18px;background:var(--navy);color:#fff;
@@ -194,6 +217,17 @@ td.del-cell{width:22px;text-align:center;padding:1px}
 }
 #cloud-bar.show{display:flex}
 
+/* ─── BETA BANNER ─────────────────────────────────────── */
+#beta-bar{
+  display:none;
+  background:#7B3010;color:#fff;
+  font-size:11px;font-weight:700;letter-spacing:.5px;
+  padding:5px 16px;text-align:center;
+  position:sticky;top:0;z-index:300;
+}
+#beta-bar.show{display:block}
+@media print{#beta-bar{display:none!important}}
+
 /* print */
 @media print{
   #hdr .btn,.btn-del,.btn-add-row,.btn-add-job{display:none!important}
@@ -202,9 +236,96 @@ td.del-cell{width:22px;text-align:center;padding:1px}
   .sec{break-inside:avoid;box-shadow:none;border:1px solid #ccc}
   body{background:#fff}
 }
+
+/* ─── MOBILE (<768px) ─────────────────────────────────── */
+@media(max-width:767px){
+  /* Header reflow */
+  #hdr{padding:8px 10px;gap:8px}
+  #hdr h1{font-size:12px;min-width:0;flex:0 0 100%}
+  .ctrl label{font-size:10px}
+  .ctrl input[type=date]{font-size:11px;padding:3px 6px}
+  /* Hide desktop-only controls on mobile */
+  .btn-export,.btn-print,.btn-rollup,
+  #focusToggle,.btn-load{display:none!important}
+  /* Guide bar hidden on mobile */
+  #guide-bar{display:none}
+  /* Desktop main hidden when mobile cards active */
+  #main.m-hidden{display:none}
+  /* Mobile save bar */
+  #mobile-save-bar{display:flex}
+  /* Mobile cards container */
+  #mobile-cards{display:block;padding:10px 10px 80px}
+}
+@media(min-width:768px){
+  #mobile-cards{display:none!important}
+  #mobile-save-bar{display:none!important}
+}
+
+/* ─── MOBILE SAVE BAR ────────────────────────────────── */
+#mobile-save-bar{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:250;
+  background:var(--navy);padding:10px 14px;
+  gap:10px;align-items:center;
+  box-shadow:0 -3px 12px rgba(0,0,0,.25);
+}
+#mobile-save-bar .btn-save{
+  flex:1;padding:12px;font-size:14px;border-radius:6px;
+  text-align:center;letter-spacing:.5px;
+}
+#mobile-save-bar .m-week-label{
+  font-size:10px;color:rgba(255,255,255,.6);white-space:nowrap
+}
+
+/* ─── MOBILE CARDS ───────────────────────────────────── */
+.m-card{
+  background:#fff;border-radius:10px;margin-bottom:12px;
+  box-shadow:0 2px 10px rgba(0,0,0,.12);overflow:hidden;
+}
+.m-card-hdr{
+  background:var(--navy);color:#fff;
+  padding:11px 14px 9px;
+}
+.m-job-name{font-size:14px;font-weight:800;line-height:1.2}
+.m-job-meta{font-size:10px;opacity:.7;margin-top:3px}
+.m-week-block{padding:10px 12px;border-bottom:1px solid var(--border)}
+.m-week-block:last-child{border-bottom:none}
+.m-wk-lbl{
+  font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:1.2px;color:#888;margin-bottom:8px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.m-wk-lbl span{font-weight:400;color:#aaa;font-size:9px}
+.m-days{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.m-day{display:flex;flex-direction:column;align-items:center;gap:3px}
+.m-day-lbl{font-size:8.5px;color:#888;text-transform:uppercase;letter-spacing:.5px;text-align:center}
+.m-day-date{font-size:8px;color:#bbb;display:block;text-align:center}
+.m-day input{
+  width:100%;height:52px;text-align:center;
+  font-size:20px;font-weight:800;
+  border:2px solid #D3DFF0;border-radius:8px;
+  background:#F8FAFD;font-family:inherit;
+  color:var(--navy);
+  -webkit-appearance:none;appearance:none;
+}
+.m-day input:focus{
+  outline:none;border-color:#4472C4;
+  background:#FFE600;color:#000;
+}
+.m-day input.m-done{background:var(--over);border-color:#70AD47;color:var(--over-fg)}
+.m-day input.m-sub{background:var(--sub);border-color:#BFA000;color:#000}
+.m-day input.m-empty{background:#F8FAFD}
+
+/* No-jobs message */
+.m-no-jobs{
+  text-align:center;padding:50px 20px;color:#888;
+  font-size:14px;line-height:1.6;
+}
 </style>
 </head>
 <body>
+
+<div id="beta-bar">⚠ BETA PREVIEW — Not for production use &nbsp;|&nbsp; Send feedback to Stephanie Jones</div>
 
 <div id="hdr">
   <h1>Paragon Contractors — Look-Ahead Resource Report</h1>
@@ -228,10 +349,17 @@ td.del-cell{width:22px;text-align:center;padding:1px}
       <option value="miller">Miller</option>
     </select>
   </div>
+  <button id="focusToggle" onclick="toggleFocusMode()" title="Show only your rows">👁 My Jobs Only</button>
   <button class="btn btn-save" onclick="saveData()">☁ Save My Rows</button>
   <button class="btn btn-load" onclick="loadData()">📂 Load My Rows</button>
+  <button class="btn btn-rollup" onclick="importFromJobDetail()" title="Pull aggregated data from Job Detail entries">⬆ Import Job Detail</button>
   <button class="btn btn-export" onclick="exportExcel()">⬇ Export Excel</button>
   <button class="btn btn-print" onclick="window.print()">🖨 Print</button>
+</div>
+
+<div id="guide-bar">
+  <span>⌨</span>
+  <span><b>Enter</b> or <b>Tab</b> → next day &nbsp;|&nbsp; <b>Shift+Enter</b> → previous &nbsp;|&nbsp; <b>↑↓</b> move rows &nbsp;|&nbsp; <b>←→</b> move left/right &nbsp;|&nbsp; Type a number and press Enter to advance</span>
 </div>
 
 <div id="cloud-bar">
@@ -239,9 +367,27 @@ td.del-cell{width:22px;text-align:center;padding:1px}
 </div>
 
 <div id="main"></div>
+
+<!-- Mobile card view — shown on <768px when super + focus mode active -->
+<div id="mobile-cards"></div>
+
+<!-- Mobile sticky save bar -->
+<div id="mobile-save-bar">
+  <span class="m-week-label" id="m-week-label">—</span>
+  <button class="btn btn-save" onclick="saveData()">☁ Save My Rows</button>
+</div>
+
 <div id="toast"></div>
 
 <script>
+// Show beta banner on any non-production hostname
+// Global: true only when served as *-sandbox.html. Controls blob key prefix
+// (sandbox: → isolated keys; unprefixed → real production schedule data).
+const IS_SANDBOX = window.location.pathname.toLowerCase().includes('sandbox');
+(function(){
+  if(IS_SANDBOX) document.getElementById('beta-bar').classList.add('show');
+})();
+
 // ─── DATA ──────────────────────────────────────────────────────────────────
 const SECTIONS = [
   {id:'site',   label:'Paragon Site Crews',    capacity:10},
@@ -250,39 +396,48 @@ const SECTIONS = [
   {id:'asph',   label:'Paragon Asphalt Crews', capacity:7},
 ];
 
+// Roster regenerated from Paragon Master Schedule 5-18-2026.xlsx (PARAGON-NEI-UG sheet)
+// — names/jn match the Excel exactly so blob jobRefs align. Days filled by loadAllRows().
 const DEFAULT_JOBS = {
   site:[
-    {jn:'565', pn:'Jenks-Elm Street',           crew:'Jared',   pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'571', pn:'BA - Jasper/Aspen',           crew:'Rolondo', pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'575', pn:'SGL Airport',                 crew:'Elijah',  pm:'Mike/Clint', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'574', pn:'COT 91st Street',             crew:'John',    pm:'Mike/Clint', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'577', pn:'Kirby-Smith Yard',            crew:'Jimmy',   pm:'',           od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'580', pn:'Jenks-Elm Street (6/15/2026)',crew:'Jared',   pm:'',           od:'06/15/2026', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'',    pn:'Rejoice Parking Lot',         crew:'',        pm:'',           od:'06/01/2026', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'',    pn:'Riverline Early Demo',        crew:'Sub',     pm:'',           od:'', ad:'', status:'SUB', imp:'', days:Array(15).fill('')},
+    {jn:'565', pn:'Jenks-Elm Street', crew:'Jared', pm:'Mike', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'571', pn:'BA - Jasper/Aspen', crew:'Randy', pm:'Mike', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'575', pn:'SGL Airport', crew:'Elijah', pm:'Mike/Clint', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'91st ST - COT', crew:'Jose', pm:'Mike/Clint', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'577', pn:'Kirby-Smith Yard', crew:'Jimmy', pm:'', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'Rejoice Parking Lot', crew:'', pm:'', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'Jenks-Elm Street Phase 2', crew:'Jared', pm:'', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'Riverline Early Demo', crew:'', pm:'Sub', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'478', pn:'Pine/Mingo Property', crew:'', pm:'', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'495', pn:'Rivercrest Phase 3', crew:'', pm:'', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'515', pn:'Rivercrest Memorial Frontage', crew:'', pm:'', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
   ],
   util:[
-    {jn:'566', pn:'COT Woodward Park',           crew:'Sergio',  pm:'Eric',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'564', pn:'MCC 24" Tie-In',             crew:'John',    pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'565', pn:'Jenks-Elm Street (Storm)',    crew:'Anthony', pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'574', pn:'COT 91st Street',             crew:'John',    pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'574', pn:'COT 91st Street (Sub)',       crew:'KSL',     pm:'Mike',       od:'', ad:'', status:'SUB', imp:'', days:Array(15).fill('')},
-    {jn:'478', pn:'Pine/Mingo Property',         crew:'',        pm:'',           od:'', ad:'', status:'HOLD', imp:'', days:Array(15).fill('')},
+    {jn:'566', pn:'COT Woodward Park', crew:'Sergio', pm:'Eric', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'564', pn:'MCC 24" Tie-In Marcus', crew:'John', pm:'Mike', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'Jenks-Elm Street (Storm)', crew:'Anthony', pm:'Mike', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'COT 91st Street', crew:'John', pm:'Mike', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'COT 91st Street', crew:'KSL', pm:'Mike', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'Jenks-Elm Street (6/15/2026)', crew:'Jared', pm:'', od:'6/15/2026', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'478', pn:'Pine/Mingo Property', crew:'', pm:'', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'495', pn:'Rivercrest Phase 3', crew:'', pm:'', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
   ],
   conc:[
-    {jn:'565', pn:'Elm St',                      crew:'Randy',   pm:'',           od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'571', pn:'BA - Jasper/Aspen',           crew:'Randy',   pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'',    pn:'Muskogee Ave Punch List',     crew:'Randy',   pm:'',           od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'566', pn:'Woodward Park',               crew:'Miller',  pm:'Eric',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'',    pn:'SGL Airport',                 crew:'Randy',   pm:'',           od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'Elm St', crew:'Randy', pm:'', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'Skelly Trail', crew:'Randy', pm:'', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'571', pn:'BA - Jasper/Aspen', crew:'Randy', pm:'Mike', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'Muskogee Ave Punch Lidt', crew:'Randy', pm:'', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'SGL Airport', crew:'Randy', pm:'', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'Jenks-Elm Street (6/15/2026)', crew:'Jared', pm:'', od:'6/15/2026', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'Woodward', crew:'Miller', pm:'Eric', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
   ],
   asph:[
-    {jn:'571', pn:'BA - Jasper/Aspen',           crew:'Rye',     pm:'Mike',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'573', pn:'Averitt',                     crew:'Rye',     pm:'Eric',       od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'',    pn:'Berryhill - Sand Springs',    crew:'Rye',     pm:'',           od:'02/15/2026', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'',    pn:'Rejoice Parking Lot',         crew:'',        pm:'',           od:'06/01/2026', ad:'', status:'', imp:'', days:Array(15).fill('')},
-    {jn:'565', pn:'Jenks-Elm Street',            crew:'Jared',   pm:'',           od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
-  ],
+    {jn:'571', pn:'BA - Jasper/Aspen', crew:'Rye', pm:'Mike', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'573', pn:'Averitt', crew:'Rye', pm:'Eric', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'Berryhill - Sand Springs (2/15/2026)', crew:'Rye', pm:'', od:'2/15/2026', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'Rejoice Parking Lot (6/1/2026)', crew:'Rye', pm:'', od:'6/1/2026', ad:'', status:'', imp:'', days:Array(15).fill('')},
+    {jn:'', pn:'Jenks-Elm Street', crew:'Rye', pm:'', od:'', ad:'', status:'', imp:'', days:Array(15).fill('')},
+  ]
 };
 
 // ─── STATE ─────────────────────────────────────────────────────────────────
@@ -299,6 +454,18 @@ let _uid = 1000;
 function uid(){ return ++_uid; }
 
 // ─── DATE UTILS ─────────────────────────────────────────────────────────────
+// Snap any date string to the Monday of its week (schedule is Monday-anchored).
+function toMonday(iso){
+  if(!iso) return iso;
+  const d = new Date(iso + 'T12:00:00');
+  if(isNaN(d)) return iso;
+  const dow = d.getDay();              // 0=Sun .. 6=Sat
+  // Mon–Sat snap back to that week's Monday; Sunday rolls forward to the next Monday
+  const offset = dow === 0 ? 1 : 1 - dow;
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().split('T')[0];
+}
+
 function nextMonday(from){
   const d = new Date(from || Date.now());
   const dow = d.getDay(); // 0=Sun
@@ -389,8 +556,8 @@ function render(){
   state.sections.forEach(sec => {
     main.appendChild(buildSection(sec, dates));
   });
-  // Re-apply super highlights after every render
-  setTimeout(highlightMyRows, 0);
+  // Re-apply super highlights + focus mode after every render
+  setTimeout(()=>{ highlightMyRows(); applyFocusMode(); }, 0);
 }
 
 function buildSection(sec, dates){
@@ -535,8 +702,9 @@ function buildJobRow(sec, job, jIdx){
   // Day cells
   cells += job.days.map((v,di) => {
     const isSub = typeof v === 'string' && v.toUpperCase() === 'SUB';
-    const isZero = !v && v !== 0;
-    const cls = isSub ? 'is-sub' : (isZero ? 'is-zero' : '');
+    const isEmpty = !v && v !== 0;
+    const isDone = !isEmpty && !isSub;
+    const cls = isSub ? 'is-sub' : isEmpty ? 'is-zero' : 'dc-done';
     return `<td class="dc ${cls}" id="dc-${id}-${di}">
       <input class="di" type="text" value="${v||''}"
         onchange="updateDay('${sec.id}','${id}',${di},this.value)"
@@ -573,12 +741,11 @@ function updateDay(secId, jobId, colIdx, val){
   const job = sec?.jobs.find(j=>j._id===jobId);
   if(!job) return;
   job.days[colIdx] = val.trim();
-  // Update cell class
   const cell = document.getElementById('dc-'+jobId+'-'+colIdx);
   if(cell){
     const isSub = val.trim().toUpperCase() === 'SUB';
     const isEmpty = val.trim() === '';
-    cell.className = 'dc ' + (isSub ? 'is-sub' : isEmpty ? 'is-zero' : '');
+    cell.className = 'dc ' + (isSub ? 'is-sub' : isEmpty ? 'is-zero' : 'dc-done');
   }
   rebuildTotals(secId);
 }
@@ -652,30 +819,71 @@ function renderSection(secId){
 function selectAll(el){ el.select && el.select(); }
 
 function dayKeyNav(e, secId, jobId, colIdx){
-  if(e.key==='Tab'||e.key==='ArrowRight'){
-    if(!e.shiftKey){ e.preventDefault(); focusDay(secId, jobId, colIdx+1); }
-  } else if(e.key==='ArrowLeft'){
-    e.preventDefault(); focusDay(secId, jobId, colIdx-1);
-  } else if(e.key==='ArrowDown' || e.key==='Enter'){
+  if(e.key==='Enter' || (e.key==='Tab' && !e.shiftKey) || e.key==='ArrowRight'){
     e.preventDefault();
-    const sec = state.sections.find(s=>s.id===secId);
-    const jIdx = sec?.jobs.findIndex(j=>j._id===jobId);
-    if(sec && jIdx < sec.jobs.length-1){
-      focusDayById(sec.jobs[jIdx+1]._id, colIdx);
-    }
+    markDone(jobId, colIdx);
+    advanceRight(jobId, colIdx);
+  } else if((e.key==='Tab' && e.shiftKey) || e.key==='ArrowLeft'){
+    e.preventDefault();
+    advanceLeft(jobId, colIdx);
+  } else if(e.key==='ArrowDown'){
+    e.preventDefault();
+    moveRow(jobId, colIdx, 1);
   } else if(e.key==='ArrowUp'){
     e.preventDefault();
-    const sec = state.sections.find(s=>s.id===secId);
-    const jIdx = sec?.jobs.findIndex(j=>j._id===jobId);
-    if(sec && jIdx > 0){
-      focusDayById(sec.jobs[jIdx-1]._id, colIdx);
-    }
+    moveRow(jobId, colIdx, -1);
   }
 }
 
-function focusDay(secId, jobId, colIdx){
-  if(colIdx<0||colIdx>14) return;
-  focusDayById(jobId, colIdx);
+// Flat list of all visible day inputs in DOM order
+function visibleDayInputs(){
+  return Array.from(document.querySelectorAll('.r-job:not(.row-hidden) input.di'));
+}
+
+function advanceRight(jobId, colIdx){
+  const all = visibleDayInputs();
+  const cur = document.getElementById('dc-'+jobId+'-'+colIdx);
+  const curInp = cur ? cur.querySelector('input') : null;
+  if(!curInp) return;
+  const idx = all.indexOf(curInp);
+  const next = all[idx+1];
+  if(next){ next.focus(); next.select(); }
+}
+
+function advanceLeft(jobId, colIdx){
+  const all = visibleDayInputs();
+  const cur = document.getElementById('dc-'+jobId+'-'+colIdx);
+  const curInp = cur ? cur.querySelector('input') : null;
+  if(!curInp) return;
+  const idx = all.indexOf(curInp);
+  const prev = all[idx-1];
+  if(prev){ prev.focus(); prev.select(); }
+}
+
+function moveRow(jobId, colIdx, dir){
+  const all = visibleDayInputs();
+  // Find an input in the same column (colIdx) of an adjacent visible row
+  const cur = document.getElementById('dc-'+jobId+'-'+colIdx);
+  const curInp = cur ? cur.querySelector('input') : null;
+  if(!curInp) return;
+  const idx = all.indexOf(curInp);
+  // Step dir*15 to land on same column in next/prev row (15 day cells per row)
+  const target = all[idx + dir*15];
+  if(target){ target.focus(); target.select(); }
+}
+
+function markDone(jobId, colIdx){
+  const cell = document.getElementById('dc-'+jobId+'-'+colIdx);
+  if(!cell) return;
+  const inp = cell.querySelector('input');
+  const val = inp ? inp.value.trim() : '';
+  const isSub = val.toUpperCase() === 'SUB';
+  if(val && !isSub){
+    cell.classList.add('dc-done');
+    cell.classList.remove('is-zero');
+  } else if(!val){
+    cell.classList.remove('dc-done');
+  }
 }
 
 function focusDayById(jobId, colIdx){
@@ -683,36 +891,81 @@ function focusDayById(jobId, colIdx){
   if(cell){ const inp = cell.querySelector('input'); if(inp){ inp.focus(); inp.select(); } }
 }
 
+// ─── FOCUS MODE ──────────────────────────────────────────────────────────────
+let focusMode = false;
+
+function toggleFocusMode(){
+  focusMode = !focusMode;
+  document.getElementById('focusToggle').classList.toggle('active', focusMode);
+  applyFocusMode();
+}
+
+function applyFocusMode(){
+  state.sections.forEach(sec => {
+    let anyVisible = false;
+    sec.jobs.forEach(job => {
+      const tr = document.getElementById('row-'+job._id);
+      if(!tr) return;
+      const hide = focusMode && !isMyRow(job);
+      tr.classList.toggle('row-hidden', hide);
+      if(!hide) anyVisible = true;
+    });
+    // Hide entire section card if none of this super's jobs are in it
+    const card = document.getElementById('sec-'+sec.id);
+    if(card) card.classList.toggle('sec-hidden', focusMode && !anyVisible);
+  });
+  switchView();
+}
+
 // ─── SUPER SELECTION ─────────────────────────────────────────────────────────
 function onSuperChange(superVal){
   state.superName = superVal;
+  // Auto-enable focus mode when a super is selected
+  if(superVal && !focusMode){
+    focusMode = true;
+    document.getElementById('focusToggle').classList.add('active');
+  } else if(!superVal && focusMode){
+    focusMode = false;
+    document.getElementById('focusToggle').classList.remove('active');
+  }
   highlightMyRows();
+  applyFocusMode(); // applyFocusMode calls switchView() at the end
 }
 
-function myCrewNames(){
-  const s = (state.superName||'').toLowerCase();
-  if(!s) return [];
-  // map super slug to possible crew field values
-  const MAP = {
-    jared:   ['jared'],
-    rolondo: ['rolondo'],
-    elijah:  ['elijah'],
-    john:    ['john'],
-    jimmy:   ['jimmy'],
-    randy:   ['randy'],
-    sergio:  ['sergio'],
-    anthony: ['anthony'],
-    rye:     ['rye'],
-    miller:  ['miller'],
-  };
-  return MAP[s] || [s];
+// Distinct selectable names — every individual person appearing in CREW or PM/GS.
+// "Mike/Clint" → Mike, Clint. Blanks dropped. Built once from the roster.
+function allFilterNames(){
+  const set = new Set();
+  state.sections.forEach(sec => sec.jobs.forEach(j => {
+    [j.crew, j.pm].forEach(field => {
+      (field||'').split(/[\/,]/).forEach(tok => {
+        const t = tok.trim();
+        if(t) set.add(t);
+      });
+    });
+  }));
+  return [...set].sort((a,b)=>a.localeCompare(b));
 }
 
 function isMyRow(job){
-  const names = myCrewNames();
-  if(!names.length) return false;
+  const sel = (state.superName||'').toLowerCase().trim();
+  if(!sel) return false;
   const crew = (job.crew||'').toLowerCase();
-  return names.some(n => crew.includes(n));
+  const pm   = (job.pm||'').toLowerCase();
+  return crew.includes(sel) || pm.includes(sel);
+}
+
+// Rebuild the "Your Name" dropdown from every name in CREW / PM-GS.
+function buildNameDropdown(){
+  const sel = document.getElementById('superName');
+  if(!sel) return;
+  const current = state.superName || '';
+  const names = allFilterNames();
+  sel.innerHTML = '<option value="">— select —</option>' +
+    names.map(n => `<option value="${n}">${n}</option>`).join('');
+  // Keep current selection if it still exists; otherwise clear
+  if(current && names.includes(current)){ sel.value = current; }
+  else { sel.value = ''; if(current) state.superName = ''; }
 }
 
 function highlightMyRows(){
@@ -728,6 +981,167 @@ function highlightMyRows(){
       }
     });
   });
+}
+
+// ─── MOBILE VIEW ─────────────────────────────────────────────────────────────
+function isMobileViewport(){ return window.innerWidth < 768; }
+
+function shouldShowMobile(){
+  return isMobileViewport() && focusMode && !!state.superName;
+}
+
+function switchView(){
+  const mobile = shouldShowMobile();
+  document.getElementById('main').classList.toggle('m-hidden', mobile);
+  if(mobile){
+    renderMobileCards();
+    // Update week label in save bar
+    const wl = state.weekOf
+      ? 'Week of ' + (new Date(state.weekOf+'T12:00:00')).toLocaleDateString('en-US',{month:'numeric',day:'numeric'})
+      : '—';
+    document.getElementById('m-week-label').textContent = wl;
+  } else {
+    document.getElementById('mobile-cards').innerHTML = '';
+  }
+}
+
+function renderMobileCards(){
+  const dates  = getWeekDates(state.weekOf);
+  const cont   = document.getElementById('mobile-cards');
+  const myJobs = [];
+  state.sections.forEach(sec => {
+    sec.jobs.forEach(job => {
+      if(isMyRow(job)) myJobs.push({ sec, job });
+    });
+  });
+
+  if(!myJobs.length){
+    cont.innerHTML = `<div class="m-no-jobs">
+      No jobs found for <strong>${state.superName}</strong> this week.<br>
+      Check that your crew name matches a row, or add a row in the full view.
+    </div>`;
+    return;
+  }
+
+  cont.innerHTML = myJobs.map(({ sec, job }) => buildMobileCard(sec, job, dates)).join('');
+}
+
+function buildMobileCard(sec, job, dates){
+  const weeks = [
+    { label:'Week 1', start:0 },
+    { label:'Week 2', start:5 },
+    { label:'Week 3', start:10 },
+  ];
+
+  const weekBlocks = weeks.map(w => {
+    const days = Array.from({length:5}, (_,i) => {
+      const di  = w.start + i;
+      const v   = job.days[di];
+      const val = (v === null || v === undefined) ? '' : String(v);
+      const isSub  = val.toUpperCase() === 'SUB';
+      const isDone = val !== '' && !isSub;
+      const cls    = isSub ? 'm-sub' : isDone ? 'm-done' : 'm-empty';
+      const d      = dates[di];
+      return `<div class="m-day">
+        <div class="m-day-lbl">${DAY_LABELS[di]}<span class="m-day-date">${d ? fmtDate(d) : ''}</span></div>
+        <input class="${cls}" type="text" inputmode="numeric"
+          value="${esc(val)}" id="mdc-${job._id}-${di}"
+          onfocus="this.select()"
+          onblur="mUpdateDay('${sec.id}','${job._id}',${di},this.value)"
+          onkeydown="mDayKeyNav(event,'${job._id}',${di})">
+      </div>`;
+    }).join('');
+
+    const d0 = dates[w.start], d4 = dates[w.start+4];
+    const range = (d0 && d4) ? fmtDate(d0)+' – '+fmtDate(d4) : '';
+    return `<div class="m-week-block">
+      <div class="m-wk-lbl">${w.label} <span>${range}</span></div>
+      <div class="m-days">${days}</div>
+    </div>`;
+  }).join('');
+
+  const jLabel = (job.jn ? job.jn + ' — ' : '') + (job.pn || '');
+  return `<div class="m-card" id="mcard-${job._id}">
+    <div class="m-card-hdr">
+      <div class="m-job-name">${esc(jLabel)}</div>
+      <div class="m-job-meta">Crew: ${esc(job.crew||'—')} &nbsp;·&nbsp; PM: ${esc(job.pm||'—')} &nbsp;·&nbsp; ${esc(sec.label)}</div>
+    </div>
+    ${weekBlocks}
+  </div>`;
+}
+
+function mUpdateDay(secId, jobId, colIdx, val){
+  updateDay(secId, jobId, colIdx, val); // reuses full state update + rebuildTotals
+  const inp = document.getElementById('mdc-'+jobId+'-'+colIdx);
+  if(inp){
+    const isSub  = val.toUpperCase()==='SUB';
+    const isDone = val !== '' && !isSub;
+    inp.className = isSub ? 'm-sub' : isDone ? 'm-done' : 'm-empty';
+  }
+}
+
+function mDayKeyNav(e, jobId, colIdx){
+  if(e.key==='Enter' || e.key==='Tab'){
+    e.preventDefault();
+    const all = Array.from(document.querySelectorAll('#mobile-cards input'));
+    const cur = document.getElementById('mdc-'+jobId+'-'+colIdx);
+    const nxt = all[all.indexOf(cur) + (e.shiftKey ? -1 : 1)];
+    if(nxt){ nxt.focus(); nxt.select(); }
+  }
+}
+
+// fmtDate helper (mobile uses same format as table)
+function fmtDate(d){ return d ? (d.getMonth()+1)+'/'+(d.getDate()) : ''; }
+
+// Resize listener — switch view if user rotates device
+window.addEventListener('resize', ()=>{ if(state.superName) switchView(); });
+
+// ─── ROLLUP IMPORT ───────────────────────────────────────────────────────────
+// Pulls all job-detail saves for the current week and merges them into the
+// crew sections. Existing rows with the same job number are updated in place;
+// new jobs are appended. Supers can still override any cell manually afterward.
+async function importFromJobDetail(){
+  const week = state.weekOf;
+  if(!week){ toast('Select a week first.'); return; }
+  try{
+    const res = await fetch(`/api/blobs?week=${encodeURIComponent(week)}&rollup=true&sandbox=${IS_SANDBOX}`);
+    if(!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    if(!data.sections || !Object.keys(data.sections).length){
+      toast('No job-detail data saved for this week yet.');
+      return;
+    }
+    let imported = 0;
+    Object.entries(data.sections).forEach(([secId, secData]) => {
+      const sec = state.sections.find(s => s.id === secId);
+      if(!sec) return;
+      (secData.rows || []).forEach(row => {
+        // Find existing job row by job number, or append
+        let job = sec.jobs.find(j => j.jn && j.jn === row.jn);
+        if(!job){
+          job = { _id: secId+'_'+uid(), jn:row.jn, pn:row.pn, crew:row.crew||'',
+                  pm:row.pm||'', od:'', ad:'', status:'', imp:'',
+                  days: Array(15).fill('') };
+          sec.jobs.push(job);
+        } else {
+          // Update metadata fields, preserve any manual day overrides
+          if(row.pn)   job.pn   = row.pn;
+          if(row.crew) job.crew = row.crew;
+          if(row.pm)   job.pm   = row.pm;
+        }
+        // Merge days: job-detail value wins for non-zero, blank otherwise
+        row.days.forEach((v, i) => {
+          if(v !== 0 && v !== '' && v !== null) job.days[i] = v;
+        });
+        imported++;
+      });
+    });
+    render();
+    toast(`Imported ${imported} job row${imported!==1?'s':''} from Job Detail ✓`);
+  }catch(err){
+    toast('Import failed: '+err.message);
+    console.error(err);
+  }
 }
 
 // ─── SAVE / LOAD ─────────────────────────────────────────────────────────────
@@ -769,7 +1183,7 @@ async function saveData(){
     const res = await fetch('/api/blobs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ week, super: superName, rows }),
+      body: JSON.stringify({ week, super: superName, rows, sandbox: IS_SANDBOX }),
     });
     const data = await res.json();
     if(data.ok){
@@ -795,7 +1209,7 @@ async function loadData(){
   if(!week){ toast('Select a week first.'); return; }
 
   try {
-    const res = await fetch(`/api/blobs?week=${week}&super=${superName}`);
+    const res = await fetch(`/api/blobs?week=${week}&super=${superName}&sandbox=${IS_SANDBOX}`);
     const data = await res.json();
     if(!data || !data.rows || !data.rows.length){
       toast('No saved data found for ' + superName + ' / ' + week);
@@ -818,6 +1232,51 @@ async function loadData(){
   }
 }
 
+// ─── LOAD ALL (historic prepopulate) ─────────────────────────────────────────
+// Fetches every super's saved rows for the week and overlays them onto the
+// schedule, so the look-ahead always opens fully populated with history.
+// The name picker then just filters/highlights — it does not gate the data.
+async function loadAllRows(week){
+  if(!week) return;
+  // Clear any prior week's overlay so switching weeks doesn't leave stale numbers
+  state.sections.forEach(sec => sec.jobs.forEach(j => { j.days = Array(15).fill(''); }));
+
+  try {
+    const res = await fetch(`/api/blobs?week=${encodeURIComponent(week)}&sandbox=${IS_SANDBOX}`);
+    const allSupers = await res.json();
+    if(!allSupers || !Object.keys(allSupers).length){ render(); return; }
+
+    let rowCount = 0;
+    Object.values(allSupers).forEach(superData => {
+      if(!superData || !Array.isArray(superData.rows)) return;
+      superData.rows.forEach(saved => {
+        const sec = state.sections.find(s => s.id === saved.sec);
+        if(!sec) return;
+        let job = sec.jobs.find(j => ((j.jn||'')+'|'+(j.pn||'')) === saved.jobRef);
+        if(!job){
+          // Historic job not in the default roster — add it so nothing is lost
+          job = {
+            jn: saved.jn||'', pn: saved.pn||'', crew: saved.crew||'',
+            pm: saved.pm||'', od:'', ad:'', status:'', imp:'',
+            _id: sec.id+'_x'+sec.jobs.length, days: Array(15).fill('')
+          };
+          sec.jobs.push(job);
+        }
+        if(Array.isArray(saved.days)) job.days = saved.days.slice(0,15);
+        rowCount++;
+      });
+    });
+
+    buildNameDropdown();   // include any names from appended historic jobs
+    render();
+    if(state.superName){ highlightMyRows(); applyFocusMode(); }
+    if(rowCount) toast('Loaded ' + rowCount + ' historic row(s) for week of ' + week);
+  } catch(e){
+    render();
+    toast('Could not load history: ' + e.message);
+  }
+}
+
 // ─── TOAST ───────────────────────────────────────────────────────────────────
 let _toastTimer;
 function toast(msg){
@@ -831,139 +1290,9 @@ function toast(msg){
 // ─── EXCEL EXPORT ─────────────────────────────────────────────────────────────
 // Generates a styled HTML-to-XLS file matching the master schedule format
 function exportExcel(){
-  const dates = getWeekDates(state.weekOf);
-  const weekLabel = state.weekOf
-    ? 'WEEK OF '+(new Date(state.weekOf+'T12:00:00')).toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric'})
-    : 'WEEK OF ___';
-
-  const N = '#1F3864', N2 = '#2F5496';
-  const CAP_BG = '#FCE4D6', HDR_BG = '#BDD7EE', HDR_BG2 = '#9DC3E6';
-  const DATE_BG = '#D6DCE4', REQ_BG = '#DDEBF7';
-  const OVER = '#C6EFCE', OVER_FG = '#375623', UNDER = '#FFC7CE', UNDER_FG = '#9C0006';
-
-  const css = `
-    <style>
-    body { font-family: Calibri, Arial; font-size: 11pt; }
-    table { border-collapse: collapse; }
-    td, th { border: 1px solid #B8B8B8; padding: 2px 5px; white-space: nowrap; font-size: 8.5pt; }
-    .navy { background: ${N}; color: #FFF; font-weight: bold; }
-    .navy2 { background: ${N2}; color: #FFF; font-weight: bold; }
-    .date-bg { background: ${DATE_BG}; color: ${N}; font-weight: bold; text-align: center; font-size: 8pt; }
-    .cap-bg { background: ${CAP_BG}; font-weight: bold; text-align: center; }
-    .hdr-bg { background: ${HDR_BG}; color: ${N}; font-weight: bold; text-align: center; font-size: 8pt; text-transform: uppercase; }
-    .hdr-bg2 { background: ${HDR_BG2}; color: ${N}; font-weight: bold; }
-    .req-bg { background: ${REQ_BG}; font-weight: bold; text-align: center; }
-    .over { background: ${OVER}; color: ${OVER_FG}; font-weight: bold; text-align: center; }
-    .under { background: ${UNDER}; color: ${UNDER_FG}; font-weight: bold; text-align: center; }
-    .zero-ou { background: #FFFFCC; text-align: center; }
-    .sub-cell { background: #FFFF00; font-weight: bold; text-align: center; }
-    .num-cell { text-align: center; }
-    .lbl-r { text-align: right; font-weight: bold; }
-    .info-hdr { font-weight: bold; background: ${N2}; color: #FFF; }
-    </style>`;
-
-  let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
-    xmlns:x="urn:schemas-microsoft-com:office:excel">
-    <head><meta charset="utf-8">${css}</head><body>`;
-
-  // Title
-  html += `<table><tr><td colspan="27" class="navy" style="font-size:11pt;padding:5px 8px;">
-    LOOK AHEAD RESOURCE REPORT — ${weekLabel}</td></tr></table><br/>`;
-
-  state.sections.forEach(sec => {
-    const cap = sec.capacity;
-    const reqVals = Array.from({length:15}, (_,i)=>calcRequired(sec.jobs, i));
-
-    html += `<table>`;
-
-    // Row 1: Section title + week labels
-    html += `<tr>
-      <td colspan="10" class="navy" style="text-align:left">${sec.label}</td>
-      <td colspan="5" class="navy" style="text-align:center">WEEK 1</td>
-      <td colspan="5" class="navy" style="text-align:center">WEEK 2</td>
-      <td colspan="5" class="navy" style="text-align:center">WEEK 3</td>
-      <td class="navy" style="font-size:8pt">WEEK OF</td>
-      <td class="navy"></td>
-    </tr>`;
-
-    // Row 2: Dates
-    html += `<tr><td colspan="10" class="date-bg" style="text-align:right">Date:</td>`;
-    for(let i=0;i<15;i++) html += `<td class="date-bg">${dates[i]?fmtDate(dates[i]):''}</td>`;
-    html += `<td class="date-bg">${dates[0]?fmtFull(dates[0]):''}</td><td></td></tr>`;
-
-    // Row 3: Headcount
-    html += `<tr>
-      <td colspan="3" class="cap-bg hdr-bg2">${sec.label}</td>
-      <td class="cap-bg" style="text-align:left;font-weight:bold">Headcount:</td>
-      <td colspan="6" class="cap-bg"></td>`;
-    for(let i=0;i<15;i++) html += `<td class="cap-bg">${cap}</td>`;
-    html += `<td></td><td></td></tr>`;
-
-    // Row 4: Column headers
-    const colHdrs = ['#','PROJECT NAME','CREW','PM/GS','ORIG DUE','ADD DAYS','ADJ DUE','DAYS REM','STATUS','IMPACT'];
-    html += `<tr>`;
-    colHdrs.forEach(h => html += `<th class="hdr-bg2" style="text-align:left">${h}</th>`);
-    for(let i=0;i<15;i++) html += `<th class="hdr-bg">${DAY_LABELS[i]}</th>`;
-    html += `<th class="hdr-bg"></th><th></th></tr>`;
-
-    // Job rows
-    sec.jobs.forEach(job => {
-      const adj = adjDueDate(job.od, job.ad);
-      const rem = daysRemaining(adj, state.weekOf);
-      const remStyle = rem!=='' && parseInt(rem)<30 ? 'color:#C00000;font-weight:bold' : 'color:#375623';
-
-      html += `<tr>
-        <td>${esc2(job.jn)}</td>
-        <td>${esc2(job.pn)}</td>
-        <td>${esc2(job.crew)}</td>
-        <td>${esc2(job.pm)}</td>
-        <td style="text-align:center">${esc2(job.od)}</td>
-        <td class="num-cell">${esc2(job.ad)}</td>
-        <td style="text-align:center;font-size:8pt;color:#666">${esc2(adj)}</td>
-        <td class="num-cell" style="${remStyle}">${rem!==''?rem:''}</td>
-        <td style="text-align:center">${esc2(job.status)}</td>
-        <td class="num-cell">${esc2(job.imp)}</td>`;
-
-      for(let i=0;i<15;i++){
-        const v = job.days[i]||'';
-        const isSub = typeof v==='string' && v.toUpperCase()==='SUB';
-        const cls = isSub ? 'sub-cell' : (v ? 'num-cell' : '');
-        html += `<td class="${cls}">${v}</td>`;
-      }
-      html += `<td></td><td></td></tr>`;
-    });
-
-    // Staff Required
-    html += `<tr><td colspan="10" class="lbl-r req-bg">Staff Required</td>`;
-    reqVals.forEach(v => html += `<td class="req-bg">${v||''}</td>`);
-    html += `<td></td><td></td></tr>`;
-
-    // Staff Over/Under
-    html += `<tr><td colspan="10" class="lbl-r req-bg">Staff Over / Under</td>`;
-    reqVals.forEach(v => {
-      const ou = cap - v;
-      const cls = ou>0?'over':ou<0?'under':'zero-ou';
-      html += `<td class="${cls}">${ou}</td>`;
-    });
-    html += `<td></td><td></td></tr>`;
-
-    html += `</table><br/>`;
-  });
-
-  html += '</body></html>';
-
-  const blob = new Blob([html], {type:'application/vnd.ms-excel'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const wo = state.weekOf ? state.weekOf.replace(/-/g,'') : 'NoDate';
-  a.href = url;
-  a.download = `Paragon_LookAhead_${wo}.xls`;
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(url), 5000);
+  ParagonExport.exportExcel(state.sections, state.weekOf, 'LookAhead');
   toast('Excel file downloaded.');
 }
-
-function esc2(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 (function init(){
@@ -988,21 +1317,33 @@ function esc2(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   }
   woEl.value = state.weekOf;
 
-  // Restore super selector
+  buildNameDropdown();   // populate "Your Name" from all CREW / PM-GS names
+
+  // Restore super selector — but only if the saved name is a real option.
+  // (Stale localStorage values like a PM name silently desync state from the UI.)
   if(state.superName){
     const sel = document.getElementById('superName');
-    if(sel) sel.value = state.superName;
+    const valid = sel && Array.from(sel.options).some(o => o.value === state.superName);
+    if(valid){ sel.value = state.superName; }
+    else { state.superName = ''; if(sel) sel.value = ''; }
   }
 
   // Persist week + superName to localStorage on change (lightweight)
   document.getElementById('weekOf').addEventListener('change', function(){
-    state.weekOf = this.value;
+    state.weekOf = toMonday(this.value);   // snap to Monday (schedule is Monday-anchored)
+    this.value = state.weekOf;             // reflect the snap back into the picker
     localStorage.setItem('paragon_la', JSON.stringify({weekOf:state.weekOf, superName:state.superName}));
-    render();
+    loadAllRows(state.weekOf);  // reload history for the newly selected week
   });
 
+  // Snap whatever week is set (saved or default) to a Monday before first load
+  state.weekOf = toMonday(state.weekOf);
+  woEl.value = state.weekOf;
+
   render();
+  loadAllRows(state.weekOf);    // prepopulate all historic data on open
 })();
 </script>
+<script src="/shared/excel-export.js"></script>
 </body>
 </html>

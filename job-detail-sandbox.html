@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paragon — Job Detail [SANDBOX]</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1F3864;--navy2:#2F5496;
+  --over:#C6EFCE;--over-fg:#375623;
+  --under:#FFC7CE;--under-fg:#9C0006;
+  --sub:#FFFF00;
+  --border:#B8B8B8;
+  --shadow:0 2px 10px rgba(0,0,0,.14);
+}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#E4E8F0;color:#1a1a1a;min-height:100vh}
+
+/* ─── HEADER ─────────────────────────────────────────────────────── */
+#hdr{
+  background:var(--navy);color:#fff;padding:10px 16px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:300;box-shadow:var(--shadow);
+}
+#hdr h1{font-size:15px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;flex:1;min-width:140px}
+.ctrl{display:flex;align-items:center;gap:6px}
+.ctrl label{font-size:11px;opacity:.75;white-space:nowrap}
+.ctrl input[type=date]{
+  padding:4px 8px;border:1px solid rgba(255,255,255,.3);border-radius:3px;
+  background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-family:inherit
+}
+.ctrl input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.7}
+.btn{
+  padding:5px 13px;border-radius:3px;border:none;font-size:11px;font-weight:700;
+  cursor:pointer;letter-spacing:.4px;text-transform:uppercase;transition:opacity .15s;white-space:nowrap
+}
+.btn:hover{opacity:.82}
+.btn-save{background:#70AD47;color:#fff}
+.btn-load{background:#fff;color:var(--navy)}
+.btn-print{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35)}
+.badge-sandbox{font-size:9px;opacity:.5;letter-spacing:1.2px;border:1px solid rgba(255,255,255,.3);padding:2px 6px;border-radius:3px}
+
+/* ─── CUSTOM DROPDOWN ─────────────────────────────────────────────── */
+.cs-wrap{position:relative;display:inline-block}
+.cs-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 10px;border:1px solid rgba(255,255,255,.3);border-radius:3px;
+  background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-family:inherit;
+  cursor:pointer;white-space:nowrap;min-width:220px;
+}
+.cs-btn:hover{background:rgba(255,255,255,.2)}
+.cs-btn .cs-arrow{margin-left:auto;font-size:10px;opacity:.7}
+.cs-list{
+  position:absolute;top:calc(100% + 4px);left:0;min-width:100%;max-height:320px;
+  overflow-y:auto;background:#fff;border:1px solid var(--border);border-radius:4px;
+  box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:500;display:none;
+}
+.cs-list.open{display:block}
+.cs-group{padding:4px 0;border-bottom:1px solid #eee}
+.cs-group:last-child{border-bottom:none}
+.cs-group-label{padding:4px 10px;font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px}
+.cs-opt{padding:6px 12px;font-size:12px;color:#222;cursor:pointer;display:block}
+.cs-opt:hover,.cs-opt.active{background:#EEF3FA;color:var(--navy)}
+.cs-opt.new-opt{color:#2F5496;font-style:italic}
+
+/* Crew lead picker (header variant) */
+.cl-wrap{position:relative;display:inline-block}
+.cl-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 10px;border:1px solid rgba(255,255,255,.3);border-radius:3px;
+  background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-family:inherit;
+  cursor:pointer;white-space:nowrap;min-width:140px;
+}
+.cl-btn:hover{background:rgba(255,255,255,.2)}
+.cl-btn .cs-arrow{margin-left:auto;font-size:10px;opacity:.7}
+.cl-list{
+  position:absolute;top:calc(100% + 4px);left:0;min-width:160px;
+  background:#fff;border:1px solid var(--border);border-radius:4px;
+  box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:500;display:none;
+}
+.cl-list.open{display:block}
+.cl-opt{padding:7px 14px;font-size:12px;color:#222;cursor:pointer}
+.cl-opt:hover,.cl-opt.active{background:#EEF3FA;color:var(--navy)}
+
+/* ─── JOB META BAR ────────────────────────────────────────────────── */
+#job-bar{
+  background:#fff;border-bottom:2px solid var(--border);
+  padding:7px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.meta-field{display:flex;align-items:center;gap:5px}
+.meta-field label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.meta-field input,.meta-field select{
+  padding:3px 7px;border:1px solid var(--border);border-radius:3px;
+  font-size:12px;font-family:inherit;background:#FAFAFA;
+}
+.section-badge{
+  display:inline-flex;align-items:center;padding:3px 12px;border-radius:12px;
+  color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+}
+/* crew-lead focus indicator */
+#crew-mode-bar{
+  display:none;background:#FFF3CD;border-bottom:1px solid #FFCA28;
+  padding:5px 14px;font-size:11px;color:#5D4037;
+  align-items:center;gap:10px;
+}
+#crew-mode-bar.active{display:flex}
+#crew-mode-bar strong{color:#1a1a1a}
+.btn-clear-crew{background:none;border:1px solid #aaa;border-radius:3px;padding:2px 8px;font-size:10px;cursor:pointer}
+
+/* ─── GUIDE BAR ───────────────────────────────────────────────────── */
+#guide-bar{
+  background:#FFF9C4;border-bottom:1px solid #E0D060;
+  padding:5px 14px;font-size:10px;color:#665500;letter-spacing:.3px;
+}
+
+/* ─── MAIN ────────────────────────────────────────────────────────── */
+#main{padding:14px 14px 60px}
+#no-job{text-align:center;padding:60px;color:#888;font-size:14px}
+
+/* ─── CARDS ───────────────────────────────────────────────────────── */
+.report-title{
+  padding:7px 14px;color:#fff;font-size:12px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.6px;border-radius:4px 4px 0 0;
+}
+.job-card{background:#fff;border-radius:0 0 5px 5px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+.job-hdr{padding:6px 12px;display:flex;align-items:center;gap:12px;color:#fff;font-size:12px;font-weight:700}
+.rollup-card{background:#fff;border-radius:5px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+.rollup-hdr{
+  background:#344a6c;color:#fff;padding:7px 12px;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  display:flex;align-items:center;gap:10px;cursor:pointer;
+}
+.rollup-hdr .toggle-arrow{margin-left:auto;font-size:12px;transition:transform .2s}
+.rollup-body{display:none}
+.rollup-body.open{display:block}
+
+.tbl-wrap{overflow-x:auto}
+
+/* ─── TABLE ───────────────────────────────────────────────────────── */
+table.jd{border-collapse:collapse;font-size:11px;width:100%;min-width:720px}
+.jd th,.jd td{border:1px solid var(--border);vertical-align:middle;padding:0;white-space:nowrap}
+.jd .r-week th{background:#344a6c;color:#fff;text-align:center;padding:3px 5px;font-size:10px;letter-spacing:.4px}
+.jd .r-dates td{background:#D6DCE4;font-size:10px;text-align:center;padding:2px 4px}
+.jd .r-cap td{background:#FCE4D6;font-size:10px;text-align:center;padding:2px 4px;font-weight:700}
+.jd .r-colhdr th{background:#BDD7EE;font-size:10px;text-align:center;padding:3px 4px}
+.jd .r-colhdr th.info-cell{text-align:left;padding:3px 6px}
+
+.r-task{height:28px}
+.r-task:nth-child(even){background:#F5F7FA}
+.r-task:hover{background:#EEF3FA}
+.r-task.row-hidden{display:none}
+.r-task.is-mine{background:#EBF5FF !important}
+
+td.info-cell{text-align:left;padding:2px 6px}
+.task-desc{min-width:220px;max-width:380px}
+.task-desc input{width:100%;padding:3px 6px;border:none;background:transparent;font-family:inherit;font-size:11px}
+.task-desc input:focus{outline:2px solid #4472C4;background:#fff}
+.editable input{width:100%;padding:2px 5px;border:none;background:transparent;font-family:inherit;font-size:11px;text-align:center}
+.editable input:focus{outline:2px solid #4472C4;background:#fff}
+
+/* day cells */
+td.dc{width:34px;min-width:28px;text-align:center}
+td.dc input.di{
+  width:100%;height:26px;padding:0 2px;border:none;background:transparent;
+  font-family:inherit;font-size:11px;text-align:center;cursor:cell;
+}
+td.dc input.di:focus{background:#FFE600 !important;outline:2px solid #E07000;outline-offset:-2px;color:#000}
+td.dc.dc-done{background:var(--over)}
+td.dc.dc-text{background:var(--sub)}
+.wk-sep{border-left:2px solid #344a6c !important}
+
+/* totals */
+.r-req td,.r-ou td{font-size:10px;text-align:center;font-weight:700;padding:2px 4px}
+.r-req td{background:#E2EFDA}
+.r-ou td{background:#FCE4D6}
+.r-req .lbl,.r-ou .lbl{text-align:right;padding-right:8px;background:#f0f0f0}
+.pos{color:#375623}.neg{color:#9C0006}.zero{color:#555}
+
+.btn-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:1px 5px;line-height:1}
+.btn-del:hover{color:#C00}
+.add-task-row{padding:7px 12px}
+.btn-add-task{padding:4px 14px;border-radius:3px;border:1px solid #aaa;background:#f8f8f8;font-size:11px;cursor:pointer}
+.btn-add-task:hover{background:#eee}
+
+/* rollup table */
+table.ru{border-collapse:collapse;font-size:11px;width:100%;min-width:720px}
+.ru th,.ru td{border:1px solid var(--border);padding:3px 6px;white-space:nowrap;text-align:center}
+.ru th{background:#BDD7EE;font-size:10px}
+.ru .r-dates td{background:#D6DCE4;font-size:10px}
+.ru .r-job td{background:#fff}
+.ru .r-job td.name{text-align:left}
+.ru .r-job td.dc-done{background:var(--over)}
+.ru .r-job td.dc-text{background:var(--sub)}
+.ru .r-req td{background:#E2EFDA;font-weight:700}
+.ru .r-ou td{background:#FCE4D6;font-weight:700}
+.ru .r-ou .pos{color:#375623}.ru .r-ou .neg{color:#9C0006}
+
+/* toast */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 22px;border-radius:20px;font-size:12px;pointer-events:none;opacity:0;transition:opacity .25s;z-index:9999}
+#toast.show{opacity:1}
+
+@media print{#hdr,#job-bar,#crew-mode-bar,#guide-bar,.btn-del,.add-task-row,.rollup-card{display:none!important}body{background:#fff}}
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <h1>Paragon — Job Detail</h1>
+  <span class="badge-sandbox">Sandbox</span>
+
+  <div class="ctrl">
+    <label>Week Of:</label>
+    <input type="date" id="weekPicker" onchange="onWeekChange(this.value)">
+  </div>
+
+  <!-- Custom job picker -->
+  <div class="ctrl">
+    <label>Job:</label>
+    <div class="cs-wrap" id="jobPickerWrap">
+      <div class="cs-btn" id="jobPickerBtn" onclick="toggleDropdown('jobPickerList')">
+        <span id="jobPickerLabel">— Select Job —</span>
+        <span class="cs-arrow">▼</span>
+      </div>
+      <div class="cs-list" id="jobPickerList"></div>
+    </div>
+  </div>
+
+  <!-- Crew lead picker -->
+  <div class="ctrl">
+    <label>Crew Lead:</label>
+    <div class="cl-wrap" id="crewPickerWrap">
+      <div class="cl-btn" id="crewPickerBtn" onclick="toggleDropdown('crewPickerList')">
+        <span id="crewPickerLabel">— All Tasks —</span>
+        <span class="cs-arrow">▼</span>
+      </div>
+      <div class="cl-list" id="crewPickerList"></div>
+    </div>
+  </div>
+
+  <button class="btn btn-load" onclick="loadData()">Load</button>
+  <button class="btn btn-save" onclick="saveData()">Save</button>
+  <button class="btn btn-print" onclick="window.print()">Print</button>
+</div>
+
+<!-- Crew focus mode banner -->
+<div id="crew-mode-bar">
+  <span>👤 Showing tasks for crew lead: <strong id="crew-mode-name"></strong></span>
+  <span style="opacity:.6;font-size:10px">Other rows hidden — totals still include all tasks</span>
+  <button class="btn-clear-crew" onclick="setCrewLead('')">Show All</button>
+</div>
+
+<div id="guide-bar">
+  Tab / Enter → right &nbsp;·&nbsp; Shift+Tab / ← → left &nbsp;·&nbsp; ↑↓ → same column adjacent row &nbsp;·&nbsp;
+  <span style="background:var(--over);padding:0 4px;border-radius:2px">Green</span> = value &nbsp;·&nbsp;
+  <span style="background:var(--sub);padding:0 4px;border-radius:2px">Yellow</span> = sub/text &nbsp;·&nbsp;
+  <span style="background:#FFE600;padding:0 4px;border-radius:2px">Bright yellow</span> = active cell
+</div>
+
+<div id="job-bar">
+  <div class="meta-field">
+    <label>Job #</label>
+    <input type="text" id="m-jn" placeholder="—" style="width:60px" oninput="updateJobMeta('jn',this.value)">
+  </div>
+  <div class="meta-field">
+    <label>Project Name</label>
+    <input type="text" id="m-pn" placeholder="—" style="width:230px" oninput="updateJobMeta('pn',this.value)">
+  </div>
+  <div class="meta-field">
+    <label>Section</label>
+    <select id="m-section" onchange="updateJobMeta('section',this.value)">
+      <option value="site">Site</option>
+      <option value="util">Utility</option>
+      <option value="conc">Concrete</option>
+      <option value="asph">Asphalt</option>
+      <option value="nei">NEI</option>
+      <option value="golf">UnitedGolf</option>
+    </select>
+  </div>
+  <div class="meta-field">
+    <label>PM / GS</label>
+    <input type="text" id="m-pm" placeholder="—" style="width:110px" oninput="updateJobMeta('pm',this.value)">
+  </div>
+  <div class="meta-field">
+    <label>Headcount (cap)</label>
+    <input type="number" id="m-cap" min="0" max="99" value="10"
+      style="width:55px;text-align:center"
+      oninput="updateJobMeta('cap',this.value);rebuildTotals()">
+  </div>
+  <span id="section-badge" class="section-badge" style="background:#185FA5">Site</span>
+</div>
+
+<div id="main">
+  <div id="no-job">Select a job above to view or enter task data.</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const SECTIONS = {
+  site: { label:'Paragon Site Crews',     color:'#185FA5', defaultCap:10 },
+  util: { label:'Paragon Utility Crews',  color:'#0F6E56', defaultCap:25 },
+  conc: { label:'Paragon Concrete Crews', color:'#854F0B', defaultCap:10 },
+  asph: { label:'Paragon Asphalt Crews',  color:'#3B6D11', defaultCap:7  },
+  nei:  { label:'NEI Crews',              color:'#534AB7', defaultCap:15 },
+  golf: { label:'UnitedGolf Crews',       color:'#7B3010', defaultCap:5  },
+};
+
+const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Mon','Tue','Wed','Thu','Fri','Mon','Tue','Wed','Thu','Fri'];
+
+// Known crew leads (for crew picker — PM adds others inline)
+const CREW_LEADS = [
+  'Jared','Rolondo','Elijah','Jose','Jimmy','Randy','Sergio','Anthony','Rye','Miller',
+  'John','KSL','VSF','DIRECT'
+];
+
+// ─── SEED JOB LIST ────────────────────────────────────────────────────────────
+// Day values for week of 2026-06-01 (sourced from 6/1/2026 master screenshot)
+// Format: [W1 Mon-Fri, W2 Mon-Fri, W3 Mon-Fri]  — '' = not scheduled
+const SEED_JOBS = [
+
+  // ── SITE CREWS (cap: 10) ────────────────────────────────────────────────────
+  { jn:'565', pn:'Jenks-Elm Street', section:'site', pm:'Mike', cap:10, tasks:[
+    { id:'565_1', name:'Site Work', crew:'Jared', pm:'Mike',
+      days:[5,5,5,5,5, 5,5,5,5,5, 5,6,6,6,''] }
+  ]},
+  { jn:'571', pn:'BA-Jasper/Aspen', section:'site', pm:'Mike', cap:10, tasks:[
+    { id:'571_1', name:'Site Work', crew:'Rolondo', pm:'Mike',
+      days:[4,4,4,4,4, 4,4,4,4,4, '',4,4,4,4] }
+  ]},
+  { jn:'574', pn:'91st to Harvard Street Rehab', section:'site', pm:'Mike/Clint', cap:10, tasks:[
+    // Full task-level detail from Schedule sheet (week 4/20/2026)
+    { id:'t574_1',  name:'REMOVE GUARDRAIL WEST BRIDGE',                           crew:'DIRECT',   pm:'MIKE/CLINT', days:Array(15).fill('') },
+    { id:'t574_2',  name:'INSTALLATION OF SILT FENCE',                             crew:'VSF',      pm:'MIKE/CLINT', days:Array(15).fill('') },
+    { id:'t574_3',  name:'CLEARING AND GRUBBING',                                  crew:'JOHN',     pm:'MIKE/CLINT', days:[4,4,'','','','','','','','','','','','',''] },
+    { id:'t574_4',  name:'SUB SURFACE INVESTIGATION',                              crew:'JOHN',     pm:'MIKE/CLINT', days:Array(15).fill('') },
+    { id:'t574_5',  name:'DELIVERY MATERIAL AND STAGING',                          crew:'JOHN',     pm:'MIKE/CLINT', days:Array(15).fill('') },
+    { id:'t574_6',  name:'INSTALLATION OF AQUA BARRIER',                           crew:'',         pm:'MIKE/CLINT', days:['','',4,4,4,'','','','','','','','','',''] },
+    { id:'t574_7',  name:'INSTALLATION OF 12" DIP STA. 17+17.43 TO 19+57.40',     crew:'KSL',      pm:'MIKE/CLINT', days:['','','','','','KSL','KSL','KSL','KSL','KSL','KSL','KSL','KSL','KSL','KSL'] },
+    { id:'t574_8',  name:'INSTALLATION OF 36" DIP STA. 17+27.19 TO 20+11.94',     crew:'KSL',      pm:'MIKE/CLINT', days:Array(15).fill('') },
+    { id:'t574_9',  name:'INSTALL ADAPTERS 36"',                                   crew:'JOHN/SUB', pm:'MIKE/CLINT', days:Array(15).fill('') },
+    { id:'t574_10', name:'CLEARING AND GRUBBING STA. 28+00',                       crew:'',         pm:'MIKE/CLINT', days:Array(15).fill('') },
+    { id:'t574_11', name:'INSTALLATION OF 12" DIP STA. 27+56.40 TO 28+86.54',     crew:'',         pm:'MIKE/CLINT', days:Array(15).fill('') },
+    { id:'t574_12', name:'INSTALLATION OF 36" DIP STA. 27+31.32 TO 28+96.65',     crew:'',         pm:'MIKE/CLINT', days:Array(15).fill('') },
+  ]},
+  { jn:'575', pn:'SGL Airport', section:'site', pm:'Mike/Clint', cap:10, tasks:[
+    { id:'575_1', name:'Site Work', crew:'Elijah', pm:'Mike/Clint',
+      days:[6,6,6,6,6, 6,6,6,6,6, '',6,6,6,6] }
+  ]},
+  { jn:'91cot', pn:'91st ST - COT', section:'site', pm:'Mike/Clint', cap:10, tasks:[
+    { id:'91cot_1', name:'Site Work', crew:'Jose', pm:'Mike/Clint',
+      days:[4,4,4,4,4, 4,4,4,4,4, '',4,4,4,4] }
+  ]},
+  { jn:'577', pn:'Kirby-Smith Yard', section:'site', pm:'', cap:10, tasks:[
+    { id:'577_1', name:'Site Work', crew:'Jimmy', pm:'',
+      days:[4,4,4,4,4, 4,4,4,4,4, '',4,4,4,4] }
+  ]},
+  { jn:'rejoice', pn:'Rejoice Parking Lot',         section:'site', pm:'', cap:10, tasks:[] },
+  { jn:'jenks2',  pn:'Jenks-Elm Street Phase 2',    section:'site', pm:'', cap:10, tasks:[
+    { id:'jenks2_1', name:'Site Work', crew:'Jared', pm:'', days:Array(15).fill('') }
+  ]},
+  { jn:'riverline',pn:'Riverline Early Demo',        section:'site', pm:'', cap:10, tasks:[
+    { id:'rvl_1', name:'Demo', crew:'SUB', pm:'', days:Array(15).fill('') }
+  ]},
+  { jn:'478', pn:'Pine/Mingo Property',             section:'site', pm:'', cap:10, tasks:[] },
+  { jn:'495', pn:'Rivercrest Phase 3',              section:'site', pm:'', cap:10, tasks:[] },
+  { jn:'515', pn:'Rivercrest Memorial Frontage',    section:'site', pm:'', cap:10, tasks:[] },
+
+  // ── UTILITY CREWS (cap: 25) ────────────────────────────────────────────────
+  { jn:'566', pn:'COT Woodward Park', section:'util', pm:'Eric', cap:25, tasks:[
+    { id:'566_1', name:'Utility Work', crew:'Sergio', pm:'Eric',
+      days:[6,6,6,6,6, 6,6,6,6,6, 6,6,6,6,6] }
+  ]},
+  { jn:'564', pn:'MCC 24" Tie-In Marcus', section:'util', pm:'Mike', cap:25, tasks:[
+    { id:'564_1', name:'Utility Work', crew:'John', pm:'Mike', days:Array(15).fill('') }
+  ]},
+  { jn:'jenks_storm', pn:'Jenks-Elm Street (Storm)', section:'util', pm:'Mike', cap:25, tasks:[
+    { id:'jstorm_1', name:'Storm Work', crew:'Anthony', pm:'Mike',
+      days:[5,5,5,5,5, 5,5,5,5,5, 5,6,6,6,''] }
+  ]},
+  { jn:'cot91_util', pn:'COT 91st Street (Utility)', section:'util', pm:'Mike', cap:25, tasks:[
+    { id:'cot91_1', name:'Utility Work',  crew:'John', pm:'Mike', days:Array(15).fill('') },
+    { id:'cot91_2', name:'KSL Sub Work',  crew:'KSL',  pm:'Mike',
+      days:['SUB','SUB','SUB','SUB','SUB','SUB','SUB','SUB','SUB','SUB','SUB','SUB','SUB','SUB','SUB'] }
+  ]},
+  { jn:'jenks_615', pn:'Jenks-Elm Street (6/15/2026)', section:'util', pm:'', cap:25, tasks:[
+    { id:'jenks615_1', name:'Utility Work', crew:'Jared', pm:'', days:Array(15).fill('') }
+  ]},
+
+  // ── CONCRETE CREWS (cap: 10) ───────────────────────────────────────────────
+  { jn:'elmst', pn:'Elm St (Concrete)', section:'conc', pm:'', cap:10, tasks:[
+    { id:'elmst_1', name:'Concrete Work', crew:'Randy', pm:'',
+      days:['','','','','', 5,5,5,5,5, 10,'','','',''] }
+  ]},
+  { jn:'571c', pn:'BA-Jasper/Aspen (Concrete)', section:'conc', pm:'Mike', cap:10, tasks:[
+    { id:'571c_1', name:'Concrete Work', crew:'Randy', pm:'Mike',
+      days:[10,10,10,10,10, '','','','','', 10,'','','',''] }
+  ]},
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let state = {
+  weekOf:   '',
+  jobKey:   '',
+  crewLead: '',
+  jobMeta:  { jn:'', pn:'', section:'site', pm:'', cap:10 },
+  tasks:    [],
+};
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+(function init(){
+  // Default to current Monday
+  const today = new Date();
+  const back  = today.getDay() === 0 ? 6 : today.getDay() - 1;
+  const mon   = new Date(today);
+  mon.setDate(today.getDate() - back);
+  state.weekOf = mon.toISOString().split('T')[0];
+  document.getElementById('weekPicker').value = state.weekOf;
+
+  buildJobPickerList();
+  buildCrewPickerList();
+  document.addEventListener('click', closeDropdownsOnOutsideClick);
+})();
+
+// ─── CUSTOM DROPDOWN HELPERS ─────────────────────────────────────────────────
+function toggleDropdown(listId){
+  const list = document.getElementById(listId);
+  const isOpen = list.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.cs-list,.cl-list').forEach(l => l.classList.remove('open'));
+  if(!isOpen) list.classList.add('open');
+}
+function closeDropdownsOnOutsideClick(e){
+  if(!e.target.closest('.cs-wrap') && !e.target.closest('.cl-wrap')){
+    document.querySelectorAll('.cs-list,.cl-list').forEach(l => l.classList.remove('open'));
+  }
+}
+
+function buildJobPickerList(){
+  const list = document.getElementById('jobPickerList');
+  list.innerHTML = '';
+  // Group by section
+  const groups = {};
+  SEED_JOBS.forEach(j => {
+    if(!groups[j.section]) groups[j.section] = [];
+    groups[j.section].push(j);
+  });
+  Object.entries(groups).forEach(([secId, jobs]) => {
+    const sec  = SECTIONS[secId] || SECTIONS.site;
+    const grp  = document.createElement('div');
+    grp.className = 'cs-group';
+    grp.innerHTML = `<div class="cs-group-label">${sec.label}</div>`;
+    jobs.forEach(j => {
+      const opt = document.createElement('div');
+      opt.className = 'cs-opt';
+      opt.textContent = (j.jn ? j.jn + ' — ' : '') + j.pn;
+      opt.dataset.val = j.jn;
+      opt.onclick = () => pickJob(j.jn, opt.textContent);
+      grp.appendChild(opt);
+    });
+    list.appendChild(grp);
+  });
+  // New job option
+  const newGrp = document.createElement('div');
+  newGrp.className = 'cs-group';
+  newGrp.innerHTML = `<div class="cs-opt new-opt" onclick="promptNewJob()">+ New Job…</div>`;
+  list.appendChild(newGrp);
+}
+
+function pickJob(jnKey, label){
+  document.getElementById('jobPickerLabel').textContent = label;
+  document.getElementById('jobPickerList').classList.remove('open');
+  // Mark active
+  document.querySelectorAll('#jobPickerList .cs-opt').forEach(o =>
+    o.classList.toggle('active', o.dataset.val === jnKey));
+  onJobChange(jnKey);
+}
+
+function buildCrewPickerList(){
+  const list = document.getElementById('crewPickerList');
+  list.innerHTML = '';
+  const all = document.createElement('div');
+  all.className = 'cl-opt';
+  all.textContent = '— All Tasks —';
+  all.onclick = () => pickCrewLead('');
+  list.appendChild(all);
+  CREW_LEADS.forEach(name => {
+    const opt = document.createElement('div');
+    opt.className = 'cl-opt';
+    opt.textContent = name;
+    opt.onclick = () => pickCrewLead(name);
+    list.appendChild(opt);
+  });
+}
+
+function pickCrewLead(name){
+  document.getElementById('crewPickerLabel').textContent = name || '— All Tasks —';
+  document.getElementById('crewPickerList').classList.remove('open');
+  setCrewLead(name);
+}
+
+function setCrewLead(name){
+  state.crewLead = name;
+  document.getElementById('crewPickerLabel').textContent = name || '— All Tasks —';
+  const bar = document.getElementById('crew-mode-bar');
+  if(name){
+    bar.classList.add('active');
+    document.getElementById('crew-mode-name').textContent = name;
+  } else {
+    bar.classList.remove('active');
+  }
+  applyCrewFilter();
+}
+
+function applyCrewFilter(){
+  document.querySelectorAll('.r-task').forEach(tr => {
+    if(!state.crewLead){ tr.classList.remove('row-hidden','is-mine'); return; }
+    const taskId = tr.id.replace('row-','');
+    const task   = state.tasks.find(t => t.id === taskId);
+    const match  = task && isMyTask(task);
+    tr.classList.toggle('row-hidden', !match);
+    tr.classList.toggle('is-mine', !!match);
+  });
+}
+
+function isMyTask(task){
+  if(!state.crewLead) return true;
+  const lead = state.crewLead.toLowerCase();
+  const crew = (task.crew||'').toLowerCase();
+  return crew.includes(lead) || lead === crew;
+}
+
+function promptNewJob(){
+  const jn = (prompt('Job # (or leave blank):') || '').trim();
+  const pn = (prompt('Project Name:') || '').trim();
+  if(!pn) return;
+  const newJob = { jn, pn, section:'site', pm:'', cap:10, tasks:[] };
+  SEED_JOBS.push(newJob);
+  buildJobPickerList();
+  pickJob(jn || pn, (jn ? jn + ' — ' : '') + pn);
+}
+
+// ─── WEEK / JOB CHANGE ───────────────────────────────────────────────────────
+function onWeekChange(val){
+  state.weekOf = val;
+  if(state.jobKey) render();
+}
+
+function onJobChange(jnKey){
+  state.jobKey = jnKey;
+  if(!jnKey){
+    document.getElementById('main').innerHTML = '<div id="no-job">Select a job above to view or enter task data.</div>';
+    return;
+  }
+  const job = SEED_JOBS.find(j => j.jn === jnKey);
+  if(job){
+    state.jobMeta = { jn:job.jn, pn:job.pn, section:job.section, pm:job.pm, cap:job.cap };
+    state.tasks   = job.tasks.map(t => ({ ...t, days:[...t.days] }));
+  } else {
+    state.jobMeta = { jn:jnKey, pn:'', section:'site', pm:'', cap:10 };
+    state.tasks   = [];
+  }
+  syncJobBar();
+  render();
+}
+
+function syncJobBar(){
+  const m = state.jobMeta;
+  document.getElementById('m-jn').value      = m.jn      || '';
+  document.getElementById('m-pn').value      = m.pn      || '';
+  document.getElementById('m-section').value = m.section || 'site';
+  document.getElementById('m-pm').value      = m.pm      || '';
+  document.getElementById('m-cap').value     = m.cap     ?? 10;
+  updateSectionBadge(m.section);
+}
+
+function updateJobMeta(field, val){
+  if(field === 'cap') val = parseInt(val) || 0;
+  state.jobMeta[field] = val;
+  if(field === 'section'){
+    updateSectionBadge(val);
+    const sec = SECTIONS[val] || SECTIONS.site;
+    state.jobMeta.cap = sec.defaultCap;
+    document.getElementById('m-cap').value = sec.defaultCap;
+    rebuildTotals();
+  }
+}
+
+function updateSectionBadge(secId){
+  const sec = SECTIONS[secId] || SECTIONS.site;
+  const b   = document.getElementById('section-badge');
+  b.style.background = sec.color;
+  b.textContent = sec.label.replace('Paragon ','').replace(' Crews','');
+}
+
+// ─── UTILITIES ────────────────────────────────────────────────────────────────
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+function getWeekDates(isoMonday){
+  if(!isoMonday) return Array(15).fill(null);
+  const base = new Date(isoMonday + 'T12:00:00');
+  return Array.from({length:15}, (_,i) => {
+    const dt = new Date(base);
+    dt.setDate(base.getDate() + Math.floor(i/5)*7 + (i%5));
+    return dt;
+  });
+}
+
+function fmtDate(d){ return d ? (d.getMonth()+1)+'/'+(d.getDate()) : ''; }
+function fmtDateFull(d){ return d ? (d.getMonth()+1)+'/'+(d.getDate())+'/'+d.getFullYear() : ''; }
+function esc(v){ return String(v===null||v===undefined?'':v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2800);
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function render(){
+  if(!state.jobKey) return;
+  const dates  = getWeekDates(state.weekOf);
+  const sec    = SECTIONS[state.jobMeta.section] || SECTIONS.site;
+  const wkLbl  = state.weekOf
+    ? 'WEEK OF ' + fmtDateFull(new Date(state.weekOf+'T12:00:00'))
+    : 'WEEK OF ___';
+
+  document.title = 'Job ' + (state.jobMeta.jn||'?') + ' — ' + wkLbl;
+
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  // ── Entry card ──
+  const title = document.createElement('div');
+  title.className = 'report-title';
+  title.style.background = sec.color;
+  title.textContent = sec.label.toUpperCase() + ' — ' + wkLbl;
+  main.appendChild(title);
+
+  const card = document.createElement('div');
+  card.className = 'job-card';
+  card.id = 'job-card';
+
+  const jHdr = document.createElement('div');
+  jHdr.className = 'job-hdr';
+  jHdr.style.background = darken(sec.color, 18);
+  jHdr.innerHTML = `
+    <span style="font-size:13px">${esc(state.jobMeta.jn||'—')}</span>
+    <span style="font-weight:400;opacity:.9">${esc(state.jobMeta.pn||'—')}</span>
+    <span style="margin-left:auto;opacity:.75;font-size:10px;font-weight:400">PM/GS: ${esc(state.jobMeta.pm||'—')}</span>
+  `;
+  card.appendChild(jHdr);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'tbl-wrap';
+  const tbl = document.createElement('table');
+  tbl.className = 'jd';
+  tbl.innerHTML = buildThead(dates) + buildTbody(dates);
+  wrap.appendChild(tbl);
+  card.appendChild(wrap);
+
+  const addRow = document.createElement('div');
+  addRow.className = 'add-task-row';
+  addRow.innerHTML = `<button class="btn-add-task" onclick="addTask()">+ Add Task Row</button>`;
+  card.appendChild(addRow);
+  main.appendChild(card);
+
+  // ── Rollup preview ──
+  main.appendChild(buildRollupCard(dates));
+
+  // Apply crew filter
+  applyCrewFilter();
+}
+
+function darken(hex, p){
+  const n=parseInt(hex.slice(1),16);
+  return '#'+[n>>16,n>>8&0xff,n&0xff].map(v=>Math.max(0,v-p).toString(16).padStart(2,'0')).join('');
+}
+
+// ─── THEAD (5 info cols: del | task | crew | pm | spacer) ────────────────────
+const INFO = 5; // number of non-day columns
+
+function buildThead(dates){
+  let wkRow = `<th class="info-cell" colspan="${INFO}"></th>
+    <th colspan="5">WEEK 1</th>
+    <th colspan="5" class="wk-sep">WEEK 2</th>
+    <th colspan="5" class="wk-sep">WEEK 3</th>`;
+
+  let dateRow = `<td class="info-cell" colspan="${INFO}">Date:</td>`;
+  for(let i=0;i<15;i++) dateRow += `<td class="dc${i===5||i===10?' wk-sep':''}">${dates[i]?fmtDate(dates[i]):''}</td>`;
+
+  const cap = state.jobMeta.cap;
+  const secLbl = (SECTIONS[state.jobMeta.section]||SECTIONS.site).label.replace('Paragon ','');
+  let capRow = `<td class="info-cell" colspan="2"><b>${esc(secLbl)}</b></td>
+                <td class="info-cell" colspan="${INFO-2}">Headcount:</td>`;
+  for(let i=0;i<15;i++) capRow += `<td class="${i===5||i===10?'wk-sep':''}">${cap}</td>`;
+
+  let colRow = `
+    <th style="width:28px"></th>
+    <th class="info-cell" style="min-width:220px">TASK / DESCRIPTION</th>
+    <th class="info-cell" style="width:80px">CREW</th>
+    <th class="info-cell" style="width:80px">PM/GS</th>
+    <th style="width:4px"></th>`;
+  for(let i=0;i<15;i++) colRow += `<th${i===5||i===10?' class="wk-sep"':''}>${DAY_LABELS[i]}</th>`;
+
+  return `<thead>
+    <tr class="r-week">${wkRow}</tr>
+    <tr class="r-dates">${dateRow}</tr>
+    <tr class="r-cap">${capRow}</tr>
+    <tr class="r-colhdr">${colRow}</tr>
+  </thead>`;
+}
+
+// ─── TBODY ────────────────────────────────────────────────────────────────────
+function buildTbody(dates){
+  let rows = state.tasks.map(t => buildTaskRow(t)).join('');
+
+  const req = calcRequired();
+  let reqCells = '';
+  for(let i=0;i<15;i++) reqCells += `<td class="sr-${i}${i===5||i===10?' wk-sep':''}">${req[i]||''}</td>`;
+  rows += `<tr class="r-req"><td></td><td class="lbl" colspan="${INFO-1}">Staff Required</td>${reqCells}</tr>`;
+
+  const cap = state.jobMeta.cap;
+  let ouCells = '';
+  for(let i=0;i<15;i++){
+    const v = cap-(req[i]||0);
+    ouCells += `<td class="ou-${i}${i===5||i===10?' wk-sep':''} ${v>0?'pos':v<0?'neg':'zero'}">${v}</td>`;
+  }
+  rows += `<tr class="r-ou"><td></td><td class="lbl" colspan="${INFO-1}">Staff Over/Under</td>${ouCells}</tr>`;
+
+  return `<tbody>${rows}</tbody>`;
+}
+
+function buildTaskRow(task){
+  const dayCells = task.days.map((v,i) => {
+    const val    = v===null||v===undefined ? '' : String(v);
+    const isNum  = val!=='' && !isNaN(parseFloat(val)) && val.trim()!=='';
+    const isText = val!=='' && !isNum;
+    return `<td class="dc${isNum?' dc-done':isText?' dc-text':''}${i===5||i===10?' wk-sep':''}" id="dct-${task.id}-${i}">
+      <input class="di" type="text" value="${esc(val)}"
+        onfocus="this.select()"
+        onblur="updateDay('${task.id}',${i},this.value)"
+        onkeydown="dayKeyNav(event,'${task.id}',${i})">
+    </td>`;
+  }).join('');
+
+  return `<tr class="r-task" id="row-${task.id}">
+    <td style="text-align:center">
+      <button class="btn-del" onclick="deleteTask('${task.id}')" title="Remove">×</button>
+    </td>
+    <td class="task-desc">
+      <input type="text" value="${esc(task.name)}" placeholder="Task / description…"
+        onblur="updateTaskField('${task.id}','name',this.value)">
+    </td>
+    <td class="editable">
+      <input type="text" value="${esc(task.crew)}" placeholder="Crew"
+        onblur="updateTaskField('${task.id}','crew',this.value)">
+    </td>
+    <td class="editable">
+      <input type="text" value="${esc(task.pm)}" placeholder="PM/GS"
+        onblur="updateTaskField('${task.id}','pm',this.value)">
+    </td>
+    <td style="width:4px"></td>
+    ${dayCells}
+  </tr>`;
+}
+
+// ─── ROLLUP PREVIEW CARD ─────────────────────────────────────────────────────
+// Shows how this job's totals appear as a single row in the master crew section
+function buildRollupCard(dates){
+  const sec     = SECTIONS[state.jobMeta.section] || SECTIONS.site;
+  const req     = calcRequired();
+  const cap     = state.jobMeta.cap;
+  const jn      = state.jobMeta.jn || '—';
+  const pn      = state.jobMeta.pn || '—';
+  const pm      = state.jobMeta.pm || '—';
+  // Primary crew = most common non-empty crew name across tasks
+  const crewMap = {};
+  state.tasks.forEach(t => { if(t.crew){ crewMap[t.crew]=(crewMap[t.crew]||0)+1; } });
+  const primaryCrew = Object.entries(crewMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
+
+  let dateCells = '';
+  for(let i=0;i<15;i++) dateCells += `<td class="${i===5||i===10?'wk-sep':''}">${dates[i]?fmtDate(dates[i]):''}</td>`;
+
+  let jobDayCells = '';
+  for(let i=0;i<15;i++){
+    const v   = req[i];
+    const val = v ? String(v) : '';
+    const isNum  = v > 0;
+    jobDayCells += `<td class="${isNum?'dc-done':''}${i===5||i===10?' wk-sep':''}">${val}</td>`;
+  }
+
+  let reqCells = '', ouCells = '';
+  for(let i=0;i<15;i++){
+    reqCells += `<td class="${i===5||i===10?'wk-sep':''}">${req[i]||''}</td>`;
+    const v  = cap-(req[i]||0);
+    ouCells  += `<td class="${i===5||i===10?'wk-sep':''} ${v>0?'pos':v<0?'neg':'zero'}">${v}</td>`;
+  }
+
+  const card = document.createElement('div');
+  card.className = 'rollup-card';
+  card.innerHTML = `
+    <div class="rollup-hdr" onclick="toggleRollup(this)">
+      <span>📊 How this job appears in the Crew Section Report (${sec.label.replace('Paragon ','')})</span>
+      <span class="toggle-arrow">▼</span>
+    </div>
+    <div class="rollup-body" id="rollup-body">
+      <div class="tbl-wrap">
+        <table class="ru">
+          <thead>
+            <tr>
+              <th colspan="4" style="text-align:left;background:${sec.color};color:#fff">
+                ${sec.label.toUpperCase()} — ${state.weekOf ? 'WEEK OF '+fmtDateFull(new Date(state.weekOf+'T12:00:00')) : ''}
+              </th>
+              <th colspan="5">WEEK 1</th>
+              <th colspan="5" class="wk-sep">WEEK 2</th>
+              <th colspan="5" class="wk-sep">WEEK 3</th>
+            </tr>
+            <tr class="r-dates">
+              <td colspan="4">Date:</td>${dateCells}
+            </tr>
+            <tr>
+              <th style="width:50px">JOB #</th>
+              <th style="min-width:180px;text-align:left">PROJECT NAME</th>
+              <th style="width:80px">CREW</th>
+              <th style="width:80px">PM/GS</th>
+              ${DAY_LABELS.map((d,i)=>`<th${i===5||i===10?' class="wk-sep"':''}>${d}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="r-job">
+              <td>${esc(jn)}</td>
+              <td class="name">${esc(pn)}</td>
+              <td>${esc(primaryCrew)}</td>
+              <td>${esc(pm)}</td>
+              ${jobDayCells}
+            </tr>
+            <tr class="r-req">
+              <td colspan="4" style="text-align:right;padding-right:8px;background:#f0f0f0">Staff Required</td>
+              ${reqCells}
+            </tr>
+            <tr class="r-ou">
+              <td colspan="4" style="text-align:right;padding-right:8px;background:#f0f0f0">Staff Over/Under</td>
+              ${ouCells}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="padding:6px 12px;font-size:10px;color:#888">
+        This row is auto-derived from task totals above. Primary crew = most-assigned crew name.
+        Sub/text values (KSL, VSF…) are excluded from headcount totals.
+      </p>
+    </div>`;
+  return card;
+}
+
+function toggleRollup(hdr){
+  const body  = document.getElementById('rollup-body');
+  const arrow = hdr.querySelector('.toggle-arrow');
+  const open  = body.classList.toggle('open');
+  arrow.style.transform = open ? 'rotate(180deg)' : '';
+}
+
+// ─── STATE UPDATES ────────────────────────────────────────────────────────────
+function updateTaskField(taskId, field, val){
+  const task = state.tasks.find(t=>t.id===taskId);
+  if(task) task[field] = val;
+}
+
+function updateDay(taskId, colIdx, val){
+  const task = state.tasks.find(t=>t.id===taskId);
+  if(!task) return;
+  task.days[colIdx] = val;
+  const cell = document.getElementById('dct-'+taskId+'-'+colIdx);
+  if(cell){
+    const isNum  = val!=='' && !isNaN(parseFloat(val)) && String(val).trim()!=='';
+    const isText = val!=='' && !isNum;
+    cell.classList.toggle('dc-done', isNum);
+    cell.classList.toggle('dc-text', isText);
+  }
+  rebuildTotals();
+}
+
+// ─── ADD / DELETE ─────────────────────────────────────────────────────────────
+function addTask(){
+  state.tasks.push({
+    id:'t'+uid(), name:'', crew:'', pm:state.jobMeta.pm||'', days:Array(15).fill('')
+  });
+  renderTable();
+  setTimeout(()=>{
+    const rows = document.querySelectorAll('.r-task');
+    if(rows.length){ const inp=rows[rows.length-1].querySelector('.task-desc input'); if(inp) inp.focus(); }
+  }, 30);
+}
+
+function deleteTask(taskId){
+  state.tasks = state.tasks.filter(t=>t.id!==taskId);
+  renderTable();
+}
+
+// ─── TOTALS ───────────────────────────────────────────────────────────────────
+function calcRequired(){
+  return Array.from({length:15}, (_,i) =>
+    state.tasks.reduce((s,t)=>{ const n=parseFloat(t.days[i]); return s+(isNaN(n)?0:n); }, 0)
+  );
+}
+
+function rebuildTotals(){
+  const cap = state.jobMeta.cap;
+  const req = calcRequired();
+  for(let i=0;i<15;i++){
+    const sr = document.querySelector(`.r-req .sr-${i}`);
+    const ou = document.querySelector(`.r-ou .ou-${i}`);
+    if(sr) sr.textContent = req[i] || '';
+    if(ou){
+      const v = cap-(req[i]||0);
+      ou.textContent = v;
+      ou.className = ou.className.replace(/\bpos\b|\bneg\b|\bzero\b/g,'').trim()+' '+(v>0?'pos':v<0?'neg':'zero');
+    }
+  }
+  // Rebuild rollup card (it's cheap)
+  const existing = document.querySelector('.rollup-card');
+  if(existing){
+    const wasOpen = existing.querySelector('.rollup-body.open') !== null;
+    const newCard = buildRollupCard(getWeekDates(state.weekOf));
+    existing.replaceWith(newCard);
+    if(wasOpen){
+      const body  = document.getElementById('rollup-body');
+      const arrow = newCard.querySelector('.toggle-arrow');
+      body.classList.add('open');
+      arrow.style.transform = 'rotate(180deg)';
+    }
+  }
+}
+
+function renderTable(){
+  const card = document.getElementById('job-card');
+  if(!card){ render(); return; }
+  const wrap = card.querySelector('.tbl-wrap');
+  const sl   = wrap ? wrap.scrollLeft : 0;
+  const tbl  = document.createElement('table');
+  tbl.className = 'jd';
+  tbl.innerHTML  = buildThead(getWeekDates(state.weekOf)) + buildTbody(getWeekDates(state.weekOf));
+  if(wrap){ wrap.innerHTML=''; wrap.appendChild(tbl); wrap.scrollLeft=sl; }
+  applyCrewFilter();
+}
+
+// ─── KEYBOARD NAV ─────────────────────────────────────────────────────────────
+function dayKeyNav(e, taskId, colIdx){
+  if(e.key==='Enter'||(e.key==='Tab'&&!e.shiftKey)||e.key==='ArrowRight'){
+    e.preventDefault(); moveRight(taskId,colIdx);
+  } else if((e.key==='Tab'&&e.shiftKey)||e.key==='ArrowLeft'){
+    e.preventDefault(); moveLeft(taskId,colIdx);
+  } else if(e.key==='ArrowDown'){
+    e.preventDefault(); moveRowDir(taskId,colIdx,1);
+  } else if(e.key==='ArrowUp'){
+    e.preventDefault(); moveRowDir(taskId,colIdx,-1);
+  }
+}
+
+function visibleDayInputs(){ return Array.from(document.querySelectorAll('.r-task:not(.row-hidden) input.di')); }
+
+function moveRight(taskId,colIdx){
+  const all=visibleDayInputs(), cur=cellInput(taskId,colIdx);
+  if(!cur) return;
+  const nxt=all[all.indexOf(cur)+1]; if(nxt){nxt.focus();nxt.select();}
+}
+function moveLeft(taskId,colIdx){
+  const all=visibleDayInputs(), cur=cellInput(taskId,colIdx);
+  if(!cur) return;
+  const prv=all[all.indexOf(cur)-1]; if(prv){prv.focus();prv.select();}
+}
+function moveRowDir(taskId,colIdx,dir){
+  const all=visibleDayInputs(), cur=cellInput(taskId,colIdx);
+  if(!cur) return;
+  const tgt=all[all.indexOf(cur)+dir*15]; if(tgt){tgt.focus();tgt.select();}
+}
+function cellInput(taskId,colIdx){
+  const c=document.getElementById('dct-'+taskId+'-'+colIdx); return c?c.querySelector('input'):null;
+}
+
+// ─── SAVE / LOAD ──────────────────────────────────────────────────────────────
+async function saveData(){
+  const week=state.weekOf, jn=state.jobMeta.jn||state.jobKey;
+  if(!week){toast('Select a week first.');return;}
+  if(!jn)  {toast('No job selected.');return;}
+  try{
+    const res=await fetch('/api/blobs',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({week,job:jn,jobMeta:state.jobMeta,tasks:state.tasks,sandbox:true})
+    });
+    if(!res.ok) throw new Error(await res.text());
+    toast('Saved ✓');
+  }catch(err){toast('Save failed: '+err.message);}
+}
+
+async function loadData(){
+  const week=state.weekOf, jn=state.jobMeta.jn||state.jobKey;
+  if(!week){toast('Select a week first.');return;}
+  if(!jn)  {toast('Select a job first.');return;}
+  try{
+    const res=await fetch(`/api/blobs?week=${encodeURIComponent(week)}&job=${encodeURIComponent(jn)}&sandbox=true`);
+    if(res.status===404){toast('No saved data for this week/job.');return;}
+    if(!res.ok) throw new Error(await res.text());
+    const data=await res.json();
+    if(data.tasks)  state.tasks=data.tasks;
+    if(data.jobMeta){state.jobMeta={...state.jobMeta,...data.jobMeta};syncJobBar();}
+    render(); toast('Loaded ✓');
+  }catch(err){toast('Load failed: '+err.message);}
+}
+</script>
+</body>
+</html>

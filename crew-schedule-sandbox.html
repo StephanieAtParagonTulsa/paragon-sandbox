@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paragon — Crew Deployment Schedule · Week of 5/18/2026</title>
+<title>Paragon — Crew Deployment Schedule · SANDBOX</title>
 <style>
   :root {
     --navy:   #1F3864;
@@ -26,6 +26,17 @@
     font-size: 12px;
     background: #EDEEF2;
     color: var(--text);
+  }
+
+  /* ── Sandbox beta banner ─────────────────────────── */
+  #beta-bar {
+    background: #7B3A00;
+    color: #FFE0B2;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 14px;
+    text-align: center;
+    letter-spacing: .3px;
   }
 
   /* ── Page header ─────────────────────────────────── */
@@ -212,6 +223,7 @@
 
   /* ── Print ────────────────────────────────────────── */
   @media print {
+    #beta-bar { display: none; }
     .toolbar { position: static; }
     .tbl-wrap { padding: 4px; overflow: visible; }
     body { background: #fff; }
@@ -220,8 +232,10 @@
 </head>
 <body>
 
+<div id="beta-bar">⚠ SANDBOX — Not for production use · Data stored in lookahead-sandbox store · Send feedback to Stephanie Jones</div>
+
 <div class="page-header">
-  <h1>Paragon Contractors — Crew Deployment Schedule</h1>
+  <h1>Paragon Contractors — Crew Deployment Schedule <span style="font-size:11px;opacity:.6;font-weight:400">[SANDBOX]</span></h1>
   <span class="sub">Source: Paragon_Master_Schedule_5-18-2026.xlsx · PARAGON-NEI-UG · Weeks of 5/18 – 9/21/2026</span>
 </div>
 
@@ -229,9 +243,10 @@
   <span class="toolbar-label">FILTER:</span>
 </div>
 
-<div id="live-bar" style="background:#e8f5e9;color:#2e7d32;font-size:11px;font-weight:600;padding:5px 14px;display:none;align-items:center;gap:10px;border-bottom:1px solid #a5d6a7">
+<div id="live-bar" style="background:#e8f5e9;color:#2e7d32;font-size:11px;font-weight:600;padding:5px 14px;display:none;align-items:center;gap:10px;border-bottom:1px solid #a5d6a7;flex-wrap:wrap">
   <span id="live-msg">📡 Live data loaded</span>
-  <button onclick="clearLive()" style="background:none;border:1px solid #2e7d32;border-radius:3px;color:#2e7d32;font-size:10px;padding:2px 7px;cursor:pointer">Clear</button>
+  <span id="live-stamps" style="font-weight:400;font-size:10px;color:#555;margin-left:4px"></span>
+  <button onclick="clearLive()" style="background:none;border:1px solid #2e7d32;border-radius:3px;color:#2e7d32;font-size:10px;padding:2px 7px;cursor:pointer;margin-left:auto">Clear</button>
 </div>
 
 <div class="tbl-wrap">
@@ -241,8 +256,8 @@
 <div class="legend" id="legend"></div>
 
 <script>
-// env param from URL — ?env=sandbox shows sandbox store; absent/other → prod (read-only affordance)
-const BLOBS_ENV = new URLSearchParams(location.search).get('env') || 'prod';
+// ── Blob store — hardcoded sandbox ────────────────────────────────────────────
+const BLOBS_ENV = 'sandbox';
 function blobUrl(params = {}) {
   const q = new URLSearchParams({ env: BLOBS_ENV, ...params });
   return '/api/blobs?' + q.toString();
@@ -294,7 +309,6 @@ WEEKS.forEach(w => {
 if (cur) MO_SPANS.push(cur);
 
 // Project schedule data
-// Each weekly array has NW entries (null = not active, 'S' = subcontractor, number = headcount)
 const PROJECTS = [
   // ── PARAGON ───────────────────────────────────────────
   { sec: 'Paragon', id: '565', name: 'Jenks-Elm Street',
@@ -480,21 +494,18 @@ function buildTable() {
       active.forEach(({ k, val }) => {
         const c = CREWS[k];
         const isSub = val === 'S';
-        // Check for live overlay (only W0 and W1 supported from look-ahead)
         const liveVal = getLiveVal(k, proj.id, proj.name, w.i);
         const hasLive = liveVal !== undefined && !isSub;
-        const changed = hasLive && liveVal !== val;
 
         if (isSub) {
-          h += `<span class="strip strip-sub" style="color:${c.bg};border-color:${c.bg}">${c.abbr} SUB</span>`;
+          h += `<span class="strip strip-sub" style="color:${c.bg};border-color:${c.bg}">SUB</span>`;
         } else if (hasLive) {
-          // Show live value with indicator
           const arrow = liveVal < val ? '▼' : liveVal > val ? '▲' : '●';
           const liveColor = liveVal < val ? '#c62828' : liveVal > val ? '#2e7d32' : c.bg;
-          h += `<span class="strip" style="background:${c.bg};color:${c.fg};opacity:.45;font-size:8px;padding:1px 3px">${c.abbr} ${val}</span>`;
+          h += `<span class="strip" style="background:${c.bg};color:${c.fg};opacity:.45;font-size:8px;padding:1px 3px">${val}</span>`;
           h += `<span class="strip" style="background:${liveColor};color:#fff;outline:2px solid ${liveColor}">${arrow} ${liveVal}</span>`;
         } else {
-          h += `<span class="strip" style="background:${c.bg};color:${c.fg}">${c.abbr} ${val}</span>`;
+          h += `<span class="strip" style="background:${c.bg};color:${c.fg}">${val}</span>`;
         }
       });
       h += '</td>';
@@ -522,15 +533,16 @@ function buildFilters() {
     <button class="fbtn" onclick="loadLiveData()" style="background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;border-width:1px">
       📡 Load Live Data
     </button>
+    <button class="fbtn" onclick="exportAll()" id="btn-export-all" style="background:#dbeafe;color:#1e40af;border-color:#93c5fd;border-width:1px">
+      ⬇ Export All
+    </button>
   </span>`;
   tb.innerHTML = h;
-  // Set week picker to current Monday by default
   const wk = document.getElementById('liveWeek');
   if(wk) wk.value = currentMonday();
 }
 
 // ── Live Data Overlay ───────────────────────────────────────────────────────
-// liveOverlay: { "site|565|Jenks-Elm Street": { W0: 4, W1: 5, ... }, ... }
 let liveOverlay = {};
 
 function liveKey(crewType, jobNo, projName) {
@@ -545,59 +557,142 @@ function currentMonday() {
   return d.toISOString().split('T')[0];
 }
 
+function fmtStamp(isoStr) {
+  if (!isoStr) return '';
+  try {
+    const d = new Date(isoStr);
+    const m = d.getMonth() + 1, day = d.getDate();
+    let h = d.getHours(), min = d.getMinutes();
+    const ampm = h >= 12 ? 'p' : 'a';
+    h = h % 12 || 12;
+    return `${m}/${day} ${h}:${String(min).padStart(2,'0')}${ampm}`;
+  } catch(_) { return ''; }
+}
+
 async function loadLiveData() {
   const picker = document.getElementById('liveWeek');
   const week = picker ? picker.value : currentMonday();
   if(!week){ alert('Select a week first.'); return; }
   try {
-    const res = await fetch(blobUrl({ week }));
+    // Always read from prod store — supers save via lookahead.html (no env param)
+    const res = await fetch('/api/blobs?week=' + encodeURIComponent(week));
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const allSupers = await res.json();
     if (!allSupers || !Object.keys(allSupers).length) {
-      showLiveBar('No live data submitted yet for week of ' + week, false);
+      showLiveBar('No live data submitted yet for week of ' + week, false, '');
       return;
     }
     liveOverlay = {};
     let rowCount = 0;
-    Object.values(allSupers).forEach(superData => {
+    const stampParts = [];
+
+    Object.entries(allSupers).forEach(([superKey, superData]) => {
       if (!superData || !superData.rows) return;
       superData.rows.forEach(row => {
-        // Map look-ahead section ids to gantt crew keys
         const crewMap = { site: 'site', util: 'utility', conc: 'concrete', asph: 'asphalt' };
         const crewType = crewMap[row.sec] || row.sec;
         const key = liveKey(crewType, row.jn || '', row.pn || '');
-        // row.days is 15 values (Mon-Fri × 3 weeks); W1 = days 5-9
         if (!liveOverlay[key]) liveOverlay[key] = {};
-        // W0 = max of days 0-4, W1 = max of days 5-9
         const w0vals = (row.days||[]).slice(0,5).map(Number).filter(v=>!isNaN(v)&&v>0);
         const w1vals = (row.days||[]).slice(5,10).map(Number).filter(v=>!isNaN(v)&&v>0);
         if (w0vals.length) liveOverlay[key][0] = Math.max(...w0vals);
         if (w1vals.length) liveOverlay[key][1] = Math.max(...w1vals);
         rowCount++;
       });
+
+      // Build stamp: "Jared · saved 6/13 9:14a (by Mike)" if savedBy differs
+      const name = superKey.charAt(0).toUpperCase() + superKey.slice(1);
+      const stamp = fmtStamp(superData.savedAt);
+      const savedBy = superData.savedBy || superKey;
+      const byNote = savedBy !== superKey ? ` (by ${savedBy.charAt(0).toUpperCase()+savedBy.slice(1)})` : '';
+      if (stamp) stampParts.push(`${name} · saved ${stamp}${byNote}`);
     });
+
     const superNames = Object.keys(allSupers).map(s => s.charAt(0).toUpperCase()+s.slice(1)).join(', ');
-    showLiveBar(`📡 Live: ${superNames} — ${rowCount} row(s) for week of ${week}`, true);
+    showLiveBar(
+      `📡 Live: ${superNames} — ${rowCount} row(s) for week of ${week}`,
+      true,
+      stampParts.join('  ·  ')
+    );
     buildTable();
+    // Stash week for exportAll
+    const expBtn = document.getElementById('btn-export-all');
+    if (expBtn) { expBtn.style.display = ''; expBtn.dataset.week = week; }
+    // Build sections for export
+    window._liveExportState = { allSupers, week };
   } catch(e) {
-    showLiveBar('Failed to load live data: ' + e.message, false);
+    showLiveBar('Failed to load live data: ' + e.message, false, '');
   }
 }
 
 function clearLive() {
   liveOverlay = {};
   document.getElementById('live-bar').style.display = 'none';
+  const expBtn = document.getElementById('btn-export-all');
+  if (expBtn) expBtn.style.display = 'none';
+  window._liveExportState = null;
   buildTable();
 }
 
-function showLiveBar(msg, ok) {
+function exportAll() {
+  if (!window.ParagonExport) { alert('Export module not loaded.'); return; }
+  const state = window._liveExportState;
+  if (!state) { alert('Load live data first.'); return; }
+  const { allSupers, week } = state;
+
+  // Build sections shape matching lookahead state.sections
+  const SEC_ORDER = [
+    { id: 'site', label: 'Site',     capacity: 10 },
+    { id: 'util', label: 'Utility',  capacity: 25 },
+    { id: 'conc', label: 'Concrete', capacity: 10 },
+    { id: 'asph', label: 'Asphalt',  capacity: 7  },
+  ];
+  const secMap = {};
+  SEC_ORDER.forEach(s => { secMap[s.id] = { ...s, jobs: {} }; });
+
+  Object.entries(allSupers).forEach(([, superData]) => {
+    if (!superData || !superData.rows) return;
+    superData.rows.forEach(row => {
+      const secId = row.sec || 'site';
+      if (!secMap[secId]) return;
+      const jobRef = (row.jn || '') + '|' + (row.pn || '');
+      if (!secMap[secId].jobs[jobRef]) {
+        secMap[secId].jobs[jobRef] = {
+          jn: row.jn || '', pn: row.pn || '', crew: row.crew || '',
+          pm: row.pm || '', od: row.od || '', ad: row.ad || '',
+          status: row.status || '', imp: row.imp || '',
+          days: Array(15).fill(''),
+        };
+      }
+      const job = secMap[secId].jobs[jobRef];
+      (row.days || []).forEach((v, i) => {
+        if (v !== '' && v !== null && v !== undefined) {
+          const existing = parseFloat(job.days[i]) || 0;
+          const incoming = parseFloat(v) || 0;
+          job.days[i] = String(existing + incoming || v);
+        }
+      });
+    });
+  });
+
+  const sections = SEC_ORDER.map(s => ({
+    ...s,
+    jobs: Object.values(secMap[s.id].jobs),
+  })).filter(s => s.jobs.length > 0);
+
+  window.ParagonExport.exportExcel(sections, week, 'GanttExport');
+}
+
+function showLiveBar(msg, ok, stamps) {
   const bar = document.getElementById('live-bar');
   const msgEl = document.getElementById('live-msg');
+  const stampEl = document.getElementById('live-stamps');
   bar.style.display = 'flex';
   bar.style.background = ok ? '#e8f5e9' : '#fff3e0';
   bar.style.color = ok ? '#2e7d32' : '#e65100';
   bar.style.borderBottomColor = ok ? '#a5d6a7' : '#ffcc80';
   msgEl.textContent = msg;
+  if (stampEl) stampEl.textContent = stamps || '';
 }
 
 function getLiveVal(crewType, projId, projName, weekIdx) {
@@ -622,7 +717,7 @@ function buildLegend() {
     <span class="leg-now"></span>
     Current week (5/25)
   </span>`;
-  h += `<span style="margin-left:auto;font-size:10px;color:#999">Source: Paragon_Master_Schedule_5-18-2026.xlsx</span>`;
+  h += `<span style="margin-left:auto;font-size:10px;color:#999">SANDBOX · Source: Paragon_Master_Schedule_5-18-2026.xlsx</span>`;
   lg.innerHTML = h;
 }
 
@@ -658,5 +753,6 @@ buildFilters();
 buildTable();
 buildLegend();
 </script>
+<script src="/shared/excel-export.js"></script>
 </body>
 </html>

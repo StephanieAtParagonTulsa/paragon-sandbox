@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "paragon-local",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-p", "4200", "."],
+      "port": 4200
+    },
+    {
+      "name": "pricing-engine",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "C:\\Users\\stephanie\\paragon-deploy\\serve-pricing-engine.bat"],
+      "port": 4201
+    }
+  ]
+}

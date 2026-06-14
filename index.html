@@ -63,6 +63,7 @@ main{max-width:1280px;margin:0 auto;padding:40px 40px 60px;}
 .badge-acct{background:#F0FDF4;color:#166534;}
 .badge-est{background:#FDF4FF;color:#6B21A8;}
 .badge-pm{background:#FFF1F0;color:#9B1C1C;}
+.badge-beta{background:#FFF9E6;color:#7B5200;border:1px solid #F5C842;}
 .card-desc{font-size:12.5px;color:var(--muted);line-height:1.5;flex:1;}
 .card-footer{padding:12px 22px;border-top:1px solid var(--light);display:flex;align-items:center;justify-content:space-between;}
 .card-status{display:flex;align-items:center;gap:6px;font-size:11px;font-family:'IBM Plex Mono',monospace;}
@@ -134,6 +135,24 @@ footer{text-align:center;padding:24px;font-size:11px;color:#3A5A7A;font-family:'
         <div class="card-status">
           <div class="status-dot" id="gantt-dot" style="background:#9CA3AF;"></div>
           <span class="status-text" id="gantt-status">Loading…</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="card" href="/job-detail-sandbox.html">
+      <div class="card-stripe" style="background:#185FA5;"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-title">Job Detail Entry</div>
+          <span class="card-badge badge-beta">In Review</span>
+        </div>
+        <div class="card-desc">Task-level crew entry by job. Crew leads select their job, filter to their tasks, and enter daily headcounts. Rolls up into the Look-Ahead report.</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-status">
+          <div class="status-dot dot-yellow dot-pulse"></div>
+          <span class="status-text">Crew leads · Task entry</span>
         </div>
         <div class="card-arrow">→</div>
       </div>
@@ -218,6 +237,24 @@ footer{text-align:center;padding:24px;font-size:11px;color:#3A5A7A;font-family:'
           <span class="status-text">Budget error checker</span>
         </div>
         <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://bidtools.paragontulsaresults.com" target="_blank">
+      <div class="card-stripe" style="background:#3B6D11;"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-title">Presumptive Pricing Engine</div>
+          <span class="card-badge badge-est">Estimating</span>
+        </div>
+        <div class="card-desc">Drop a QTO Excel file to price against ODOT District 08 historical averages. D08 primary · statewide reference · 1,276 pay items · Mar 2026.</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-status">
+          <div class="status-dot dot-green"></div>
+          <span class="status-text">D08 · 1,276 items · Mar 2026</span>
+        </div>
+        <div class="card-arrow">↗</div>
       </div>
     </a>
 
