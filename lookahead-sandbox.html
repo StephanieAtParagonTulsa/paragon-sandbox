@@ -1193,142 +1193,11 @@ function toast(msg){
 }
 
 // ─── EXCEL EXPORT ─────────────────────────────────────────────────────────────
-// Generates a styled HTML-to-XLS file matching the master schedule format
+// Delegates to /shared/excel-export.js (ParagonExport module — single source of truth)
 function exportExcel(){
-  const dates = getWeekDates(state.weekOf);
-  const weekLabel = state.weekOf
-    ? 'WEEK OF '+(new Date(state.weekOf+'T12:00:00')).toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric'})
-    : 'WEEK OF ___';
-
-  const N = '#1F3864', N2 = '#2F5496';
-  const CAP_BG = '#FCE4D6', HDR_BG = '#BDD7EE', HDR_BG2 = '#9DC3E6';
-  const DATE_BG = '#D6DCE4', REQ_BG = '#DDEBF7';
-  const OVER = '#C6EFCE', OVER_FG = '#375623', UNDER = '#FFC7CE', UNDER_FG = '#9C0006';
-
-  const css = `
-    <style>
-    body { font-family: Calibri, Arial; font-size: 11pt; }
-    table { border-collapse: collapse; }
-    td, th { border: 1px solid #B8B8B8; padding: 2px 5px; white-space: nowrap; font-size: 8.5pt; }
-    .navy { background: ${N}; color: #FFF; font-weight: bold; }
-    .navy2 { background: ${N2}; color: #FFF; font-weight: bold; }
-    .date-bg { background: ${DATE_BG}; color: ${N}; font-weight: bold; text-align: center; font-size: 8pt; }
-    .cap-bg { background: ${CAP_BG}; font-weight: bold; text-align: center; }
-    .hdr-bg { background: ${HDR_BG}; color: ${N}; font-weight: bold; text-align: center; font-size: 8pt; text-transform: uppercase; }
-    .hdr-bg2 { background: ${HDR_BG2}; color: ${N}; font-weight: bold; }
-    .req-bg { background: ${REQ_BG}; font-weight: bold; text-align: center; }
-    .over { background: ${OVER}; color: ${OVER_FG}; font-weight: bold; text-align: center; }
-    .under { background: ${UNDER}; color: ${UNDER_FG}; font-weight: bold; text-align: center; }
-    .zero-ou { background: #FFFFCC; text-align: center; }
-    .sub-cell { background: #FFFF00; font-weight: bold; text-align: center; }
-    .num-cell { text-align: center; }
-    .lbl-r { text-align: right; font-weight: bold; }
-    .info-hdr { font-weight: bold; background: ${N2}; color: #FFF; }
-    </style>`;
-
-  let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
-    xmlns:x="urn:schemas-microsoft-com:office:excel">
-    <head><meta charset="utf-8">${css}</head><body>`;
-
-  // Title
-  html += `<table><tr><td colspan="27" class="navy" style="font-size:11pt;padding:5px 8px;">
-    LOOK AHEAD RESOURCE REPORT — ${weekLabel}</td></tr></table><br/>`;
-
-  state.sections.forEach(sec => {
-    const cap = sec.capacity;
-    const reqVals = Array.from({length:15}, (_,i)=>calcRequired(sec.jobs, i));
-
-    html += `<table>`;
-
-    // Row 1: Section title + week labels
-    html += `<tr>
-      <td colspan="10" class="navy" style="text-align:left">${sec.label}</td>
-      <td colspan="5" class="navy" style="text-align:center">WEEK 1</td>
-      <td colspan="5" class="navy" style="text-align:center">WEEK 2</td>
-      <td colspan="5" class="navy" style="text-align:center">WEEK 3</td>
-      <td class="navy" style="font-size:8pt">WEEK OF</td>
-      <td class="navy"></td>
-    </tr>`;
-
-    // Row 2: Dates
-    html += `<tr><td colspan="10" class="date-bg" style="text-align:right">Date:</td>`;
-    for(let i=0;i<15;i++) html += `<td class="date-bg">${dates[i]?fmtDate(dates[i]):''}</td>`;
-    html += `<td class="date-bg">${dates[0]?fmtFull(dates[0]):''}</td><td></td></tr>`;
-
-    // Row 3: Headcount
-    html += `<tr>
-      <td colspan="3" class="cap-bg hdr-bg2">${sec.label}</td>
-      <td class="cap-bg" style="text-align:left;font-weight:bold">Headcount:</td>
-      <td colspan="6" class="cap-bg"></td>`;
-    for(let i=0;i<15;i++) html += `<td class="cap-bg">${cap}</td>`;
-    html += `<td></td><td></td></tr>`;
-
-    // Row 4: Column headers
-    const colHdrs = ['#','PROJECT NAME','CREW','PM/GS','ORIG DUE','ADD DAYS','ADJ DUE','DAYS REM','STATUS','IMPACT'];
-    html += `<tr>`;
-    colHdrs.forEach(h => html += `<th class="hdr-bg2" style="text-align:left">${h}</th>`);
-    for(let i=0;i<15;i++) html += `<th class="hdr-bg">${DAY_LABELS[i]}</th>`;
-    html += `<th class="hdr-bg"></th><th></th></tr>`;
-
-    // Job rows
-    sec.jobs.forEach(job => {
-      const adj = adjDueDate(job.od, job.ad);
-      const rem = daysRemaining(adj, state.weekOf);
-      const remStyle = rem!=='' && parseInt(rem)<30 ? 'color:#C00000;font-weight:bold' : 'color:#375623';
-
-      html += `<tr>
-        <td>${esc2(job.jn)}</td>
-        <td>${esc2(job.pn)}</td>
-        <td>${esc2(job.crew)}</td>
-        <td>${esc2(job.pm)}</td>
-        <td style="text-align:center">${esc2(job.od)}</td>
-        <td class="num-cell">${esc2(job.ad)}</td>
-        <td style="text-align:center;font-size:8pt;color:#666">${esc2(adj)}</td>
-        <td class="num-cell" style="${remStyle}">${rem!==''?rem:''}</td>
-        <td style="text-align:center">${esc2(job.status)}</td>
-        <td class="num-cell">${esc2(job.imp)}</td>`;
-
-      for(let i=0;i<15;i++){
-        const v = job.days[i]||'';
-        const isSub = typeof v==='string' && v.toUpperCase()==='SUB';
-        const cls = isSub ? 'sub-cell' : (v ? 'num-cell' : '');
-        html += `<td class="${cls}">${v}</td>`;
-      }
-      html += `<td></td><td></td></tr>`;
-    });
-
-    // Staff Required
-    html += `<tr><td colspan="10" class="lbl-r req-bg">Staff Required</td>`;
-    reqVals.forEach(v => html += `<td class="req-bg">${v||''}</td>`);
-    html += `<td></td><td></td></tr>`;
-
-    // Staff Over/Under
-    html += `<tr><td colspan="10" class="lbl-r req-bg">Staff Over / Under</td>`;
-    reqVals.forEach(v => {
-      const ou = cap - v;
-      const cls = ou>0?'over':ou<0?'under':'zero-ou';
-      html += `<td class="${cls}">${ou}</td>`;
-    });
-    html += `<td></td><td></td></tr>`;
-
-    html += `</table><br/>`;
-  });
-
-  html += '</body></html>';
-
-  const blob = new Blob([html], {type:'application/vnd.ms-excel'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const wo = state.weekOf ? state.weekOf.replace(/-/g,'') : 'NoDate';
-  a.href = url;
-  a.download = `Paragon_LookAhead_${wo}.xls`;
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(url), 5000);
+  ParagonExport.exportExcel(state.sections, state.weekOf, 'LookAhead');
   toast('Excel file downloaded.');
 }
-
-function esc2(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
-
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 // ─── BASELINE ──────────────────────────────────────────────────────────────
 
@@ -1421,5 +1290,6 @@ window.uploadBaseline = uploadBaseline;
   render();
 })();
 </script>
+<script src="/shared/excel-export.js"></script>
 </body>
 </html>

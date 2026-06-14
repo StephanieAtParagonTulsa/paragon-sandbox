@@ -498,14 +498,14 @@ function buildTable() {
         const hasLive = liveVal !== undefined && !isSub;
 
         if (isSub) {
-          h += `<span class="strip strip-sub" style="color:${c.bg};border-color:${c.bg}">${c.abbr} SUB</span>`;
+          h += `<span class="strip strip-sub" style="color:${c.bg};border-color:${c.bg}">SUB</span>`;
         } else if (hasLive) {
           const arrow = liveVal < val ? '▼' : liveVal > val ? '▲' : '●';
           const liveColor = liveVal < val ? '#c62828' : liveVal > val ? '#2e7d32' : c.bg;
-          h += `<span class="strip" style="background:${c.bg};color:${c.fg};opacity:.45;font-size:8px;padding:1px 3px">${c.abbr} ${val}</span>`;
+          h += `<span class="strip" style="background:${c.bg};color:${c.fg};opacity:.45;font-size:8px;padding:1px 3px">${val}</span>`;
           h += `<span class="strip" style="background:${liveColor};color:#fff;outline:2px solid ${liveColor}">${arrow} ${liveVal}</span>`;
         } else {
-          h += `<span class="strip" style="background:${c.bg};color:${c.fg}">${c.abbr} ${val}</span>`;
+          h += `<span class="strip" style="background:${c.bg};color:${c.fg}">${val}</span>`;
         }
       });
       h += '</td>';
@@ -532,6 +532,9 @@ function buildFilters() {
     <input type="date" id="liveWeek" style="padding:4px 7px;border-radius:5px;border:1px solid var(--border);font-size:11px;font-family:inherit;color:var(--text)" />
     <button class="fbtn" onclick="loadLiveData()" style="background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;border-width:1px">
       📡 Load Live Data
+    </button>
+    <button class="fbtn" onclick="exportAll()" id="btn-export-all" style="background:#dbeafe;color:#1e40af;border-color:#93c5fd;border-width:1px">
+      ⬇ Export All
     </button>
   </span>`;
   tb.innerHTML = h;
@@ -571,7 +574,8 @@ async function loadLiveData() {
   const week = picker ? picker.value : currentMonday();
   if(!week){ alert('Select a week first.'); return; }
   try {
-    const res = await fetch(blobUrl({ week }));
+    // Always read from prod store — supers save via lookahead.html (no env param)
+    const res = await fetch('/api/blobs?week=' + encodeURIComponent(week));
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const allSupers = await res.json();
     if (!allSupers || !Object.keys(allSupers).length) {
@@ -611,6 +615,11 @@ async function loadLiveData() {
       stampParts.join('  ·  ')
     );
     buildTable();
+    // Stash week for exportAll
+    const expBtn = document.getElementById('btn-export-all');
+    if (expBtn) { expBtn.style.display = ''; expBtn.dataset.week = week; }
+    // Build sections for export
+    window._liveExportState = { allSupers, week };
   } catch(e) {
     showLiveBar('Failed to load live data: ' + e.message, false, '');
   }
@@ -619,7 +628,59 @@ async function loadLiveData() {
 function clearLive() {
   liveOverlay = {};
   document.getElementById('live-bar').style.display = 'none';
+  const expBtn = document.getElementById('btn-export-all');
+  if (expBtn) expBtn.style.display = 'none';
+  window._liveExportState = null;
   buildTable();
+}
+
+function exportAll() {
+  if (!window.ParagonExport) { alert('Export module not loaded.'); return; }
+  const state = window._liveExportState;
+  if (!state) { alert('Load live data first.'); return; }
+  const { allSupers, week } = state;
+
+  // Build sections shape matching lookahead state.sections
+  const SEC_ORDER = [
+    { id: 'site', label: 'Site',     capacity: 10 },
+    { id: 'util', label: 'Utility',  capacity: 25 },
+    { id: 'conc', label: 'Concrete', capacity: 10 },
+    { id: 'asph', label: 'Asphalt',  capacity: 7  },
+  ];
+  const secMap = {};
+  SEC_ORDER.forEach(s => { secMap[s.id] = { ...s, jobs: {} }; });
+
+  Object.entries(allSupers).forEach(([, superData]) => {
+    if (!superData || !superData.rows) return;
+    superData.rows.forEach(row => {
+      const secId = row.sec || 'site';
+      if (!secMap[secId]) return;
+      const jobRef = (row.jn || '') + '|' + (row.pn || '');
+      if (!secMap[secId].jobs[jobRef]) {
+        secMap[secId].jobs[jobRef] = {
+          jn: row.jn || '', pn: row.pn || '', crew: row.crew || '',
+          pm: row.pm || '', od: row.od || '', ad: row.ad || '',
+          status: row.status || '', imp: row.imp || '',
+          days: Array(15).fill(''),
+        };
+      }
+      const job = secMap[secId].jobs[jobRef];
+      (row.days || []).forEach((v, i) => {
+        if (v !== '' && v !== null && v !== undefined) {
+          const existing = parseFloat(job.days[i]) || 0;
+          const incoming = parseFloat(v) || 0;
+          job.days[i] = String(existing + incoming || v);
+        }
+      });
+    });
+  });
+
+  const sections = SEC_ORDER.map(s => ({
+    ...s,
+    jobs: Object.values(secMap[s.id].jobs),
+  })).filter(s => s.jobs.length > 0);
+
+  window.ParagonExport.exportExcel(sections, week, 'GanttExport');
 }
 
 function showLiveBar(msg, ok, stamps) {
@@ -692,5 +753,6 @@ buildFilters();
 buildTable();
 buildLegend();
 </script>
+<script src="/shared/excel-export.js"></script>
 </body>
 </html>
