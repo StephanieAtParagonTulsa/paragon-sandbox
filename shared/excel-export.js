@@ -1,44 +1,38 @@
 /**
  * Paragon Look-Ahead — shared Excel export module
- * Self-hosted at /shared/excel-export.js (Netlify static).
+ * Outputs SpreadsheetML XML so Excel processes it as a real spreadsheet
+ * with live SUM / subtraction formulas in Staff Required and Over/Under rows.
  *
  * Usage:
  *   ParagonExport.exportExcel(sections, weekOf, filenameBase)
  *
- * sections  — array matching state.sections shape:
- *   [{ id, label, capacity, jobs: [{ jn, pn, crew, pm, od, ad, status, imp, days[15] }] }]
- * weekOf    — ISO Monday string, e.g. "2026-06-01"
- * filenameBase — e.g. "LookAhead" → downloads "Paragon_LookAhead_20260601.xls"
- *
- * Staff Required and Over/Under rows use x:Formula so they recalculate
- * when headcount cells are edited directly in Excel.
+ * sections  — [{ id, label, capacity, jobs: [{ jn, pn, crew, pm, od, ad, status, imp, days[15] }] }]
+ * weekOf    — ISO Monday string e.g. "2026-06-01"
+ * filenameBase — e.g. "LookAhead" → Paragon_LookAhead_20260601.xlsx
  */
 
-window.ParagonExport = (function() {
+window.ParagonExport = (function () {
 
-  // ── Date helpers ─────────────────────────────────────────────────────────────
+  // ── Date helpers ──────────────────────────────────────────────────────────────
   function getWeekDates(isoMonday) {
     if (!isoMonday) return Array(15).fill(null);
     const dates = [];
     const base = new Date(isoMonday + 'T12:00:00');
-    for (let w = 0; w < 3; w++) {
+    for (let w = 0; w < 3; w++)
       for (let d = 0; d < 5; d++) {
         const dt = new Date(base);
         dt.setDate(base.getDate() + w * 7 + d);
         dates.push(dt);
       }
-    }
     return dates;
   }
 
   function fmtDate(dt) {
-    if (!dt) return '';
-    return (dt.getMonth() + 1) + '/' + dt.getDate();
+    return dt ? (dt.getMonth() + 1) + '/' + dt.getDate() : '';
   }
 
   function fmtFull(dt) {
-    if (!dt) return '';
-    return (dt.getMonth() + 1) + '/' + dt.getDate() + '/' + dt.getFullYear();
+    return dt ? (dt.getMonth() + 1) + '/' + dt.getDate() + '/' + dt.getFullYear() : '';
   }
 
   const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Mon','Tue','Wed','Thu','Fri','Mon','Tue','Wed','Thu','Fri'];
@@ -52,118 +46,161 @@ window.ParagonExport = (function() {
   }
 
   function calcRequired(jobs, colIdx) {
-    return jobs.reduce((sum, j) => sum + parseDay(j.days[colIdx]), 0);
+    return jobs.reduce((s, j) => s + parseDay(j.days[colIdx]), 0);
   }
 
   function adjDueDate(od, addDays) {
     if (!od) return '';
     try {
-      const parts = od.split('/');
-      if (parts.length !== 3) return od;
-      const d = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
+      const p = od.split('/');
+      if (p.length !== 3) return od;
+      const d = new Date(+p[2], +p[0] - 1, +p[1]);
       d.setDate(d.getDate() + (parseInt(addDays) || 0));
-      return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+      return (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();
     } catch { return od; }
   }
 
   function daysRemaining(adjDue, weekOfIso) {
     if (!adjDue || !weekOfIso) return '';
     try {
-      const parts = adjDue.split('/');
-      if (parts.length !== 3) return '';
-      const due = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
+      const p = adjDue.split('/');
+      if (p.length !== 3) return '';
+      const due = new Date(+p[2], +p[0]-1, +p[1]);
       const ref = new Date(weekOfIso + 'T12:00:00');
       return Math.round((due - ref) / 86400000);
     } catch { return ''; }
   }
 
-  function esc(s) {
-    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function xe(s) {
+    return (s == null ? '' : String(s))
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // Excel column letter for a day index (0-14 → K-Y, i.e. cols 11-25)
-  // Info columns A-J (10 cols), day columns K-Y (15 cols)
-  function colLetter(dayIdx) {
-    return String.fromCharCode(64 + 11 + dayIdx); // K=75, Y=89
+  // ── SpreadsheetML builders ────────────────────────────────────────────────────
+
+  // styleID, value (shown as fallback), type ('String'|'Number'), formula (R1C1), mergeAcross, colIndex
+  // Row builder — emits an EXPLICIT ss:Index on every cell so MergeAcross spans
+  // can never produce overlapping/ambiguous column positions (the #1 cause of
+  // "Problems During Load" in SpreadsheetML). After a cell, the column cursor
+  // advances by 1 + mergeAcross.
+  function makeRow() {
+    let col = 0;        // 1-based index of the LAST emitted cell's start
+    let buf = '';
+    return {
+      // add(styleID, value, type, formula, mergeAcross)
+      add(styleID, value, type, formula, mergeAcross) {
+        const idx = col + 1;
+        let a = ` ss:Index="${idx}"`;
+        if (styleID)     a += ` ss:StyleID="${styleID}"`;
+        if (mergeAcross) a += ` ss:MergeAcross="${mergeAcross}"`;
+        if (formula)     a += ` ss:Formula="${xe(formula)}"`;
+        const t = type || (typeof value === 'number' ? 'Number' : 'String');
+        const d = (value !== '' && value !== null && value !== undefined)
+          ? `<Data ss:Type="${t}">${xe(String(value))}</Data>` : '';
+        buf += `<Cell${a}>${d}</Cell>`;
+        col = idx + (mergeAcross || 0);   // advance past the merged span
+        return this;
+      },
+      html() { return `<Row>${buf}</Row>\n`; }
+    };
   }
 
-  // ── Main export function ──────────────────────────────────────────────────────
+  // Styles — borders included in every named style so they don't need inheritance
+  const B = `<Borders>` +
+      `<Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B8B8B8"/>` +
+      `<Border ss:Position="Left"   ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B8B8B8"/>` +
+      `<Border ss:Position="Right"  ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B8B8B8"/>` +
+      `<Border ss:Position="Top"    ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B8B8B8"/>` +
+    `</Borders>`;
+
+  // SpreadsheetML requires child order: Alignment → Borders → Font → Interior
+  // font: extra attrs appended after FontName; ss:Size="8.5" injected only if not already present
+  function sty(id, interior, font, align) {
+    const f = font || '';
+    const sizeAttr = f.includes('ss:Size') ? '' : ' ss:Size="8.5"';
+    const aln = align ? `<Alignment ss:Horizontal="${align}" ss:Vertical="Center"/>` : '<Alignment ss:Vertical="Center"/>';
+    const int = interior ? `<Interior ss:Color="${interior}" ss:Pattern="Solid"/>` : '';
+    return `<Style ss:ID="${id}">${aln}${B}<Font ss:FontName="Calibri"${sizeAttr}${f}/>${int}</Style>`;
+  }
+
+  const STYLES = `<Styles>
+${sty('sD',    null,      '',                                               'Left')}
+${sty('sN',    '#1F3864', ' ss:Bold="1" ss:Color="#FFFFFF" ss:Size="11"',  'Left')}
+${sty('sNc',   '#1F3864', ' ss:Bold="1" ss:Color="#FFFFFF" ss:Size="11"',  'Center')}
+${sty('sN2',   '#2F5496', ' ss:Bold="1" ss:Color="#FFFFFF"',               'Left')}
+${sty('sN2c',  '#2F5496', ' ss:Bold="1" ss:Color="#FFFFFF"',               'Center')}
+${sty('sDt',   '#D6DCE4', ' ss:Bold="1" ss:Color="#1F3864" ss:Size="8"',   'Center')}
+${sty('sCap',  '#FCE4D6', ' ss:Bold="1"',                                  'Center')}
+${sty('sCapL', '#FCE4D6', ' ss:Bold="1"',                                  'Left')}
+${sty('sHdr',  '#BDD7EE', ' ss:Bold="1" ss:Color="#1F3864" ss:Size="8"',   'Center')}
+${sty('sH2',   '#9DC3E6', ' ss:Bold="1" ss:Color="#1F3864"',               'Left')}
+${sty('sReq',  '#DDEBF7', ' ss:Bold="1"',                                  'Center')}
+${sty('sReqR', '#DDEBF7', ' ss:Bold="1"',                                  'Right')}
+${sty('sOv',   '#C6EFCE', ' ss:Bold="1" ss:Color="#375623"',               'Center')}
+${sty('sUn',   '#FFC7CE', ' ss:Bold="1" ss:Color="#9C0006"',               'Center')}
+${sty('sZ',    '#FFFFCC', '',                                               'Center')}
+${sty('sSub',  '#FFFF00', ' ss:Bold="1"',                                  'Center')}
+${sty('sNum',  null,       '',                                              'Center')}
+${sty('sWrn',  null,       ' ss:Bold="1" ss:Color="#C00000"',              'Center')}
+${sty('sOk',   null,       ' ss:Color="#375623"',                          'Center')}
+${sty('sSp',   null,       '',                                              'Left')}
+</Styles>`;
+
+  // ── Main export ───────────────────────────────────────────────────────────────
   function exportExcel(sections, weekOf, filenameBase) {
-    const dates = getWeekDates(weekOf);
+    const dates    = getWeekDates(weekOf);
     const weekLabel = weekOf
-      ? 'WEEK OF ' + (new Date(weekOf + 'T12:00:00')).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })
+      ? 'WEEK OF ' + new Date(weekOf + 'T12:00:00').toLocaleDateString('en-US', { month:'numeric', day:'numeric', year:'numeric' })
       : 'WEEK OF ___';
 
-    const N = '#1F3864', N2 = '#2F5496';
-    const CAP_BG = '#FCE4D6', HDR_BG = '#BDD7EE', HDR_BG2 = '#9DC3E6';
-    const DATE_BG = '#D6DCE4', REQ_BG = '#DDEBF7';
-    const OVER = '#C6EFCE', OVER_FG = '#375623', UNDER = '#FFC7CE', UNDER_FG = '#9C0006';
-
-    const css = `<style>
-      body { font-family: Calibri, Arial; font-size: 11pt; }
-      table { border-collapse: collapse; }
-      td, th { border: 1px solid #B8B8B8; padding: 2px 5px; white-space: nowrap; font-size: 8.5pt; }
-      .navy  { background: ${N};  color: #FFF; font-weight: bold; }
-      .navy2 { background: ${N2}; color: #FFF; font-weight: bold; }
-      .date-bg { background: ${DATE_BG}; color: ${N}; font-weight: bold; text-align: center; font-size: 8pt; }
-      .cap-bg  { background: ${CAP_BG}; font-weight: bold; text-align: center; }
-      .hdr-bg  { background: ${HDR_BG};  color: ${N}; font-weight: bold; text-align: center; font-size: 8pt; text-transform: uppercase; }
-      .hdr-bg2 { background: ${HDR_BG2}; color: ${N}; font-weight: bold; }
-      .req-bg  { background: ${REQ_BG}; font-weight: bold; text-align: center; }
-      .over    { background: ${OVER};  color: ${OVER_FG}; font-weight: bold; text-align: center; }
-      .under   { background: ${UNDER}; color: ${UNDER_FG}; font-weight: bold; text-align: center; }
-      .zero-ou { background: #FFFFCC; text-align: center; }
-      .sub-cell { background: #FFFF00; font-weight: bold; text-align: center; }
-      .num-cell { text-align: center; }
-      .lbl-r   { text-align: right; font-weight: bold; }
-      .info-hdr { font-weight: bold; background: ${N2}; color: #FFF; }
-    </style>`;
-
-    // Single table — track rowNum (1-indexed) so x:Formula refs are exact
     let rowNum = 0;
-    function row(inner) { rowNum++; return `<tr>${inner}</tr>`; }
+    let rows = '';
+    function emit(rb) { rowNum++; rows += rb.html(); }
 
-    let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:x="urn:schemas-microsoft-com:office:excel">
-      <head><meta charset="utf-8">${css}</head><body><table>`;
-
-    // Title row
-    html += row(`<td colspan="27" class="navy" style="font-size:11pt;padding:5px 8px;">LOOK AHEAD RESOURCE REPORT — ${weekLabel}</td>`);
-    // Blank spacer after title
-    html += row(`<td colspan="27"></td>`);
+    // Title
+    { const rb = makeRow(); rb.add('sN', 'LOOK AHEAD RESOURCE REPORT — ' + weekLabel, 'String', null, 26); emit(rb); }
+    // Spacer
+    { const rb = makeRow(); rb.add('sSp', '', 'String', null, 26); emit(rb); }
 
     sections.forEach((sec, si) => {
       const cap = sec.capacity;
 
-      // Row 1: section title + week labels
-      html += row(`
-        <td colspan="10" class="navy" style="text-align:left">${esc(sec.label)}</td>
-        <td colspan="5"  class="navy" style="text-align:center">WEEK 1</td>
-        <td colspan="5"  class="navy" style="text-align:center">WEEK 2</td>
-        <td colspan="5"  class="navy" style="text-align:center">WEEK 3</td>
-        <td class="navy" style="font-size:8pt">WEEK OF</td>
-        <td class="navy"></td>`);
+      // Section header row — label + week group labels (cols: 1-10, 11-15, 16-20, 21-25, 26, 27)
+      { const rb = makeRow();
+        rb.add('sN',  sec.label, 'String', null, 9);
+        rb.add('sNc', 'WEEK 1',  'String', null, 4);
+        rb.add('sNc', 'WEEK 2',  'String', null, 4);
+        rb.add('sNc', 'WEEK 3',  'String', null, 4);
+        rb.add('sNc', 'WEEK OF', 'String');
+        rb.add('sN',  '',        'String');
+        emit(rb); }
 
-      // Row 2: dates
-      let dateInner = `<td colspan="10" class="date-bg" style="text-align:right">Date:</td>`;
-      for (let i = 0; i < 15; i++) dateInner += `<td class="date-bg">${dates[i] ? fmtDate(dates[i]) : ''}</td>`;
-      dateInner += `<td class="date-bg">${dates[0] ? fmtFull(dates[0]) : ''}</td><td></td>`;
-      html += row(dateInner);
+      // Dates row
+      { const rb = makeRow();
+        rb.add('sDt', 'Date:', 'String', null, 9);
+        for (let i = 0; i < 15; i++) rb.add('sDt', dates[i] ? fmtDate(dates[i]) : '', 'String');
+        rb.add('sDt', dates[0] ? fmtFull(dates[0]) : '', 'String');
+        rb.add('sD', '', 'String');
+        emit(rb); }
 
-      // Row 3: headcount
-      let capInner = `<td colspan="3" class="cap-bg hdr-bg2">${esc(sec.label)}</td>
-        <td class="cap-bg" style="text-align:left;font-weight:bold">Headcount:</td>
-        <td colspan="6" class="cap-bg"></td>`;
-      for (let i = 0; i < 15; i++) capInner += `<td class="cap-bg">${cap}</td>`;
-      capInner += `<td></td><td></td>`;
-      html += row(capInner);
+      // Headcount row (cols: 1-3, 4, 5-10, 11-25, 26, 27)
+      { const rb = makeRow();
+        rb.add('sH2',   sec.label,    'String', null, 2);
+        rb.add('sCapL', 'Headcount:', 'String');
+        rb.add('sCap',  '',           'String', null, 5);
+        for (let i = 0; i < 15; i++) rb.add('sCap', cap, 'Number');
+        rb.add('sD', '', 'String');
+        rb.add('sD', '', 'String');
+        emit(rb); }
 
-      // Row 4: column headers
-      const colHdrs = ['#','PROJECT NAME','CREW','PM/GS','ORIG DUE','ADD DAYS','ADJ DUE','DAYS REM','STATUS','IMPACT'];
-      let hdrInner = colHdrs.map(h => `<th class="hdr-bg2" style="text-align:left">${h}</th>`).join('');
-      for (let i = 0; i < 15; i++) hdrInner += `<th class="hdr-bg">${DAY_LABELS[i]}</th>`;
-      hdrInner += `<th class="hdr-bg"></th><th></th>`;
-      html += row(hdrInner);
+      // Column headers
+      { const rb = makeRow();
+        ['#','PROJECT NAME','CREW','PM/GS','ORIG DUE','ADD DAYS','ADJ DUE','DAYS REM','STATUS','IMPACT']
+          .forEach(h => rb.add('sH2', h, 'String'));
+        for (let i = 0; i < 15; i++) rb.add('sHdr', DAY_LABELS[i], 'String');
+        rb.add('sHdr', '', 'String');
+        rb.add('sD', '', 'String');
+        emit(rb); }
 
       const jobStartRow = rowNum + 1;
 
@@ -171,63 +208,103 @@ window.ParagonExport = (function() {
       sec.jobs.forEach(job => {
         const adj = adjDueDate(job.od, job.ad);
         const rem = daysRemaining(adj, weekOf);
-        const remStyle = rem !== '' && parseInt(rem) < 30 ? 'color:#C00000;font-weight:bold' : 'color:#375623';
-
-        let jobInner = `
-          <td>${esc(job.jn)}</td>
-          <td>${esc(job.pn)}</td>
-          <td>${esc(job.crew)}</td>
-          <td>${esc(job.pm)}</td>
-          <td style="text-align:center">${esc(job.od)}</td>
-          <td class="num-cell">${esc(job.ad)}</td>
-          <td style="text-align:center;font-size:8pt;color:#666">${esc(adj)}</td>
-          <td class="num-cell" style="${remStyle}">${rem !== '' ? rem : ''}</td>
-          <td style="text-align:center">${esc(job.status)}</td>
-          <td class="num-cell">${esc(job.imp)}</td>`;
+        const remSty = (rem !== '' && parseInt(rem) < 30) ? 'sWrn' : 'sOk';
+        const rb = makeRow();
+        rb.add('sD',   job.jn,     'String');
+        rb.add('sD',   job.pn,     'String');
+        rb.add('sD',   job.crew,   'String');
+        rb.add('sD',   job.pm,     'String');
+        rb.add('sNum', job.od,     'String');
+        rb.add('sNum', job.ad,     'String');
+        rb.add('sOk',  adj,        'String');
+        rb.add(remSty, rem !== '' ? rem : '', rem !== '' ? 'Number' : 'String');
+        rb.add('sNum', job.status, 'String');
+        rb.add('sNum', job.imp,    'String');
         for (let i = 0; i < 15; i++) {
-          const v = job.days[i] || '';
+          const v = job.days[i];
           const isSub = typeof v === 'string' && v.toUpperCase() === 'SUB';
-          const cls = isSub ? 'sub-cell' : (v ? 'num-cell' : '');
-          jobInner += `<td class="${cls}">${v}</td>`;
+          if (isSub) {
+            rb.add('sSub', 'SUB', 'String');
+          } else if (v !== '' && v !== null && v !== undefined) {
+            const n = parseFloat(v);
+            rb.add('sNum', isNaN(n) ? v : n, isNaN(n) ? 'String' : 'Number');
+          } else {
+            rb.add('sD', '', 'String');
+          }
         }
-        jobInner += `<td></td><td></td>`;
-        html += row(jobInner);
+        rb.add('sD', '', 'String');
+        rb.add('sD', '', 'String');
+        emit(rb);
       });
 
       const jobEndRow = rowNum;
-      const reqRow   = rowNum + 1;
+      const reqRow    = rowNum + 1;
 
-      // Staff Required — SUM formula per day column
-      let reqInner = `<td colspan="10" class="lbl-r req-bg">Staff Required</td>`;
-      for (let i = 0; i < 15; i++) {
-        const col = colLetter(i);
-        const staticVal = calcRequired(sec.jobs, i) || '';
-        reqInner += `<td class="req-bg" x:Formula="=SUM(${col}${jobStartRow}:${col}${jobEndRow})">${staticVal}</td>`;
-      }
-      reqInner += `<td></td><td></td>`;
-      html += row(reqInner);
+      // Staff Required — live SUM formulas (R1C1). Day cols are 11-25.
+      { const rb = makeRow();
+        rb.add('sReqR', 'Staff Required', 'String', null, 9);
+        for (let i = 0; i < 15; i++) {
+          const col = 11 + i;
+          rb.add('sReq', calcRequired(sec.jobs, i) || 0, 'Number',
+            `=SUM(R${jobStartRow}C${col}:R${jobEndRow}C${col})`);
+        }
+        rb.add('sD', '', 'String');
+        rb.add('sD', '', 'String');
+        emit(rb); }
 
-      // Staff Over/Under — cap minus Staff Required cell
-      let ouInner = `<td colspan="10" class="lbl-r req-bg">Staff Over / Under</td>`;
-      for (let i = 0; i < 15; i++) {
-        const col = colLetter(i);
-        const reqVal = calcRequired(sec.jobs, i);
-        const ou = cap - reqVal;
-        const cls = ou > 0 ? 'over' : ou < 0 ? 'under' : 'zero-ou';
-        ouInner += `<td class="${cls}" x:Formula="=${cap}-${col}${reqRow}">${ou}</td>`;
-      }
-      ouInner += `<td></td><td></td>`;
-      html += row(ouInner);
+      // Staff Over/Under — cap minus the Staff Required cell above
+      { const rb = makeRow();
+        rb.add('sReqR', 'Staff Over / Under', 'String', null, 9);
+        for (let i = 0; i < 15; i++) {
+          const col = 11 + i;
+          const ou = cap - calcRequired(sec.jobs, i);
+          const style = ou > 0 ? 'sOv' : ou < 0 ? 'sUn' : 'sZ';
+          rb.add(style, ou, 'Number', `=${cap}-R${reqRow}C${col}`);
+        }
+        rb.add('sD', '', 'String');
+        rb.add('sD', '', 'String');
+        emit(rb); }
 
       // Spacer between sections
       if (si < sections.length - 1) {
-        html += row(`<td colspan="27"></td>`);
+        const rb = makeRow(); rb.add('sSp', '', 'String', null, 26); emit(rb);
       }
     });
 
-    html += `</table></body></html>`;
+    // Column widths (info cols narrower, day cols uniform)
+    const colWidths = [
+      40, 160, 60, 60, 55, 45, 55, 45, 50, 40,  // cols 1-10
+      28, 28, 28, 28, 28,                          // week 1
+      28, 28, 28, 28, 28,                          // week 2
+      28, 28, 28, 28, 28,                          // week 3
+      50, 20                                        // spacers
+    ];
+    const colDefs = colWidths.map(w =>
+      `<Column ss:Width="${w}" ss:AutoFitWidth="0"/>`).join('\n');
 
-    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook
+  xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:x="urn:schemas-microsoft-com:office:excel"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+${STYLES}
+<Worksheet ss:Name="Look Ahead">
+<Table>
+${colDefs}
+${rows}</Table>
+<WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+  <FreezePanes/>
+  <FrozenNoSplit/>
+  <SplitHorizontal>1</SplitHorizontal>
+  <TopRowBottomPane>1</TopRowBottomPane>
+  <ActivePane>2</ActivePane>
+</WorksheetOptions>
+</Worksheet>
+</Workbook>`;
+
+    const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     const wo   = weekOf ? weekOf.replace(/-/g, '') : 'NoDate';
