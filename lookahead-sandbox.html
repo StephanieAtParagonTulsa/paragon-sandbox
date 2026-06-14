@@ -900,7 +900,7 @@ async function saveData(){
     const res = await fetch(blobUrl(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ week, super: superName, rows }),
+      body: JSON.stringify({ week, super: superName, rows, savedBy: superName, status: 'draft' }),
     });
     const data = await res.json();
     if(data.ok){

@@ -226,14 +226,21 @@ async function handleCrew(event, params) {
 
   if (event.httpMethod === "POST") {
     const body = JSON.parse(event.body || "{}");
-    const { week: w, super: s, rows, sandbox: sbx } = body;
+    const { week: w, super: s, rows, sandbox: sbx, savedBy, status } = body;
     const keyNs = sbx === true ? "sandbox:" : "";
     const key = keyNs + w + ":" + s;
-    const value = JSON.stringify({ week: w, super: s, rows, updated: new Date().toISOString() });
+    const savedAt = new Date().toISOString();
+    const value = JSON.stringify({
+      week: w, super: s, rows,
+      savedBy: savedBy || s,          // who triggered the save (may differ from blob owner in Review Mode)
+      savedAt,                         // authoritative server-side timestamp
+      status:  status  || 'draft',     // draft | submitted (reserved for future use)
+      updated: savedAt,                // kept for backward compat
+    });
     console.log("POST key:", key, "len:", value.length);
     await store.set(key, value);
     console.log("set() done");
-    return { statusCode: 200, headers, body: JSON.stringify({ ok: true, key }) };
+    return { statusCode: 200, headers, body: JSON.stringify({ ok: true, key, savedAt }) };
   }
 
   return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paragon — Crew Deployment Schedule · SANDBOX</title>
+<style>
+  :root {
+    --navy:   #1F3864;
+    --c-site: #185FA5;
+    --c-util: #0F6E56;
+    --c-conc: #854F0B;
+    --c-asph: #3B6D11;
+    --c-nei:  #534AB7;
+    --c-ug:   #7B3010;
+    --border: #D8DCE4;
+    --bg-alt: #F7F8FA;
+    --text:   #1A1A2E;
+    --muted:  #5C6070;
+    --now-bg: #EBF4FF;
+    --now-bd: #4A90D9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    background: #EDEEF2;
+    color: var(--text);
+  }
+
+  /* ── Sandbox beta banner ─────────────────────────── */
+  #beta-bar {
+    background: #7B3A00;
+    color: #FFE0B2;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 14px;
+    text-align: center;
+    letter-spacing: .3px;
+  }
+
+  /* ── Page header ─────────────────────────────────── */
+  .page-header {
+    background: var(--navy);
+    color: #fff;
+    padding: 14px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .page-header h1 { font-size: 15px; font-weight: 600; letter-spacing: .4px; }
+  .page-header .sub { font-size: 11px; opacity: .65; }
+
+  /* ── Toolbar ──────────────────────────────────────── */
+  .toolbar {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .toolbar-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-right: 4px; }
+  .fbtn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 5px;
+    border: 1px solid var(--border);
+    background: #fff; color: var(--muted);
+    font-size: 11px; font-weight: 500; cursor: pointer;
+    transition: all .12s;
+    white-space: nowrap;
+  }
+  .fbtn:hover { border-color: #aaa; color: var(--text); }
+  .fbtn.on { border-width: 1.5px; }
+  .fbtn .dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .fbtn#bf-all.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  /* ── Table wrapper ────────────────────────────────── */
+  .tbl-wrap {
+    overflow-x: auto;
+    padding: 14px;
+  }
+  table.gantt {
+    border-collapse: collapse;
+    min-width: max-content;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,.10);
+  }
+  table.gantt td,
+  table.gantt th {
+    border: 0.5px solid var(--border);
+    padding: 0;
+    vertical-align: middle;
+  }
+
+  /* Sticky left columns */
+  .sk { position: sticky; z-index: 3; background: inherit; }
+  .sk0 { left: 0; }
+  .sk1 { left: 50px; }
+  .sk2 { left: 235px; }
+  .sk3 { left: 315px; }
+
+  /* ── Column header rows ───────────────────────────── */
+  .hdr-mo th {
+    background: var(--navy);
+    color: rgba(255,255,255,.85);
+    font-size: 10px; font-weight: 600;
+    padding: 5px 4px;
+    text-align: center;
+    letter-spacing: .3px;
+  }
+  .hdr-mo th.mo-first { border-left: 2px solid rgba(255,255,255,.3); }
+  .hdr-mo th.proj-col {
+    background: var(--navy);
+    text-align: left;
+    padding: 5px 10px;
+    font-size: 11px;
+    z-index: 5 !important;
+  }
+  .hdr-wk th {
+    background: #2C4A7C;
+    color: rgba(255,255,255,.75);
+    font-size: 9px; font-weight: 500;
+    padding: 4px 2px;
+    text-align: center;
+    min-width: 50px; max-width: 50px;
+  }
+  .hdr-wk th.proj-col { background: #2C4A7C; z-index: 5 !important; border-bottom: 2px solid var(--now-bd); }
+  .hdr-wk th.mo-first { border-left: 2px solid rgba(255,255,255,.2); }
+  .hdr-wk th.now-col  { background: var(--now-bd); color: #fff; font-weight: 700; }
+
+  /* ── Section header rows ──────────────────────────── */
+  .sec-row td {
+    font-size: 10px; font-weight: 700;
+    padding: 5px 10px;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  /* ── Project rows ─────────────────────────────────── */
+  .prow { background: #fff; }
+  .prow:nth-child(even) { background: var(--bg-alt); }
+  .prow .sk { background: inherit; }
+  .prow td.job-no {
+    width: 50px; min-width: 50px;
+    padding: 4px 6px;
+    text-align: right;
+    color: var(--muted);
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .prow td.proj-name {
+    width: 185px; min-width: 185px;
+    padding: 4px 10px;
+    font-weight: 600;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .prow td.crew-col {
+    width: 80px; min-width: 80px;
+    padding: 2px 4px;
+    font-size: 10px;
+    vertical-align: middle;
+  }
+  .prow td.pm-col {
+    width: 80px; min-width: 80px;
+    padding: 2px 4px;
+    font-size: 10px;
+    vertical-align: middle;
+    border-right: 2px solid var(--border);
+  }
+  .prow td.week-cell {
+    min-width: 50px; max-width: 50px;
+    padding: 2px 1px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .prow td.week-cell.mo-first { border-left: 2px solid var(--border); }
+  .prow td.week-cell.now-col  { background: var(--now-bg) !important; border-left: 1.5px solid var(--now-bd); border-right: 1.5px solid var(--now-bd); }
+
+  /* ── Crew strips ──────────────────────────────────── */
+  .strip {
+    display: block;
+    font-size: 9px; font-weight: 600;
+    padding: 2px 4px;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 2px;
+    margin: 1px;
+    line-height: 1.4;
+    letter-spacing: .1px;
+  }
+  .strip-sub {
+    color: inherit;
+    background: transparent !important;
+    border: 1px dashed;
+    font-size: 8px;
+    opacity: .8;
+  }
+
+  /* ── Legend ───────────────────────────────────────── */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    padding: 10px 14px;
+    background: #fff;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .legend-label { font-weight: 600; color: var(--text); margin-right: 4px; }
+  .leg-item { display: inline-flex; align-items: center; gap: 5px; }
+  .leg-swatch { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+  .leg-now { width: 12px; height: 12px; border-radius: 2px; background: var(--now-bg); border: 1.5px solid var(--now-bd); }
+
+  /* ── Print ────────────────────────────────────────── */
+  @media print {
+    #beta-bar { display: none; }
+    .toolbar { position: static; }
+    .tbl-wrap { padding: 4px; overflow: visible; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+
+<div id="beta-bar">⚠ SANDBOX — Not for production use · Data stored in lookahead-sandbox store · Send feedback to Stephanie Jones</div>
+
+<div class="page-header">
+  <h1>Paragon Contractors — Crew Deployment Schedule <span style="font-size:11px;opacity:.6;font-weight:400">[SANDBOX]</span></h1>
+  <span class="sub">Source: Paragon_Master_Schedule_5-18-2026.xlsx · PARAGON-NEI-UG · Weeks of 5/18 – 9/21/2026</span>
+</div>
+
+<div class="toolbar" id="toolbar">
+  <span class="toolbar-label">FILTER:</span>
+</div>
+
+<div id="live-bar" style="background:#e8f5e9;color:#2e7d32;font-size:11px;font-weight:600;padding:5px 14px;display:none;align-items:center;gap:10px;border-bottom:1px solid #a5d6a7;flex-wrap:wrap">
+  <span id="live-msg">📡 Live data loaded</span>
+  <span id="live-stamps" style="font-weight:400;font-size:10px;color:#555;margin-left:4px"></span>
+  <button onclick="clearLive()" style="background:none;border:1px solid #2e7d32;border-radius:3px;color:#2e7d32;font-size:10px;padding:2px 7px;cursor:pointer;margin-left:auto">Clear</button>
+</div>
+
+<div class="tbl-wrap">
+  <table class="gantt" id="gantt"></table>
+</div>
+
+<div class="legend" id="legend"></div>
+
+<script>
+// ── Blob store — hardcoded sandbox ────────────────────────────────────────────
+const BLOBS_ENV = 'sandbox';
+function blobUrl(params = {}) {
+  const q = new URLSearchParams({ env: BLOBS_ENV, ...params });
+  return '/api/blobs?' + q.toString();
+}
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+
+const CREWS = {
+  site:     { label: 'Site Crew',    abbr: 'SITE', bg: '#185FA5', fg: '#fff', lb: '#E6F1FB', ld: '#185FA5' },
+  utility:  { label: 'Utility Crew', abbr: 'UTIL', bg: '#0F6E56', fg: '#fff', lb: '#E1F5EE', ld: '#0F6E56' },
+  concrete: { label: 'Concrete Crew',abbr: 'CONC', bg: '#854F0B', fg: '#fff', lb: '#FAEEDA', ld: '#854F0B' },
+  asphalt:  { label: 'Asphalt Crew', abbr: 'ASPH', bg: '#3B6D11', fg: '#fff', lb: '#EAF3DE', ld: '#3B6D11' },
+  nei:      { label: 'NEI',          abbr: 'NEI',  bg: '#534AB7', fg: '#fff', lb: '#EEEDFE', ld: '#534AB7' },
+  ug:       { label: 'United Golf',  abbr: 'UG',   bg: '#7B3010', fg: '#fff', lb: '#FAECE7', ld: '#7B3010' },
+};
+
+const SEC_COLORS = {
+  Paragon: '#1F3864',
+  NEI:     '#534AB7',
+  UG:      '#7B3010',
+};
+const SEC_LABELS = {
+  Paragon: 'Paragon Contractors',
+  NEI:     'NEI — Northeastern Equipment Inc.',
+  UG:      'United Golf Courses',
+};
+
+// W0 = 5/18, W1 = 5/25 (CURRENT), W2 = 6/1 ... W18 = 9/21
+const NW = 19;
+const W_START = new Date('2026-05-18T12:00:00');
+const WEEKS = Array.from({ length: NW }, (_, i) => {
+  const d = new Date(W_START.getTime() + i * 7 * 86400000);
+  return {
+    i, date: d,
+    lbl: `${d.getMonth() + 1}/${d.getDate()}`,
+    mo: d.toLocaleString('en-US', { month: 'short' }),
+    moIdx: d.getMonth(),
+    now: i === 1, // current week (5/25/2026)
+  };
+});
+
+// Month spans for colspan header
+const MO_SPANS = [];
+let cur = null;
+WEEKS.forEach(w => {
+  if (!cur || cur.mo !== w.mo) { if (cur) MO_SPANS.push(cur); cur = { mo: w.mo, s: w.i, n: 0 }; }
+  cur.n++;
+});
+if (cur) MO_SPANS.push(cur);
+
+// Project schedule data
+const PROJECTS = [
+  // ── PARAGON ───────────────────────────────────────────
+  { sec: 'Paragon', id: '565', name: 'Jenks-Elm Street',
+    crewInfo: {
+      site:     { crew: 'Jared',   pm: 'Mike' },
+      utility:  { crew: 'Anthony', pm: 'Mike' },
+      concrete: { crew: 'Randy',   pm: '' },
+      asphalt:  { crew: 'Jared',   pm: '' },
+    },
+    crews: {
+    site:     [5, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, null, null, null, null, null, null, null],
+    utility:  [6, 6, 6, 6, 6, 6, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    concrete: [null, 5, 10, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    asphalt:  [null, null, 7, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  }},
+  { sec: 'Paragon', id: '574', name: 'COT 91st Street',
+    crewInfo: {
+      site:    { crew: 'John', pm: 'Mike/Clint' },
+      utility: { crew: 'KSL (sub)', pm: 'Mike' },
+    },
+    crews: {
+    site:    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, null, null, null, null, null, null, null],
+    utility: ['S','S','S','S','S','S','S','S','S','S','S','S','S','S','S','S','S','S','S'],
+  }},
+  { sec: 'Paragon', id: '575', name: 'SGL Airport',
+    crewInfo: { site: { crew: 'Elijah', pm: 'Mike/Clint' } },
+    crews: {
+    site: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 3, null, null, null, null],
+  }},
+  { sec: 'Paragon', id: '566', name: 'COT Woodward Park',
+    crewInfo: { utility: { crew: 'Sergio', pm: 'Eric' } },
+    crews: {
+    utility: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, null, null, null, null, null, null, null],
+  }},
+  { sec: 'Paragon', id: '577', name: 'Kirby-Smith Yard',
+    crewInfo: { site: { crew: 'Jimmy', pm: '' } },
+    crews: {
+    site: [4, 4, 4, 4, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  }},
+  { sec: 'Paragon', id: '571', name: 'BA - Jasper/Aspen',
+    crewInfo: {
+      site:     { crew: 'Rolondo', pm: 'Mike' },
+      concrete: { crew: 'Randy',   pm: 'Mike' },
+    },
+    crews: {
+    site:     [4, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    concrete: [10, null, 10, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  }},
+  { sec: 'Paragon', id: '', name: 'Berryhill - Sand Springs',
+    crewInfo: { asphalt: { crew: 'Rye', pm: '' } },
+    crews: {
+    asphalt: [7, 7, null, 7, 7, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  }},
+  { sec: 'Paragon', id: '', name: 'Muskogee Ave Punch List',
+    crewInfo: { concrete: { crew: 'Randy', pm: '' } },
+    crews: {
+    concrete: [null, 5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  }},
+  { sec: 'Paragon', id: '', name: 'Rejoice Parking Lot',
+    crewInfo: { site: { crew: '', pm: '' } },
+    crews: {
+    site: [null, null, 4, 4, 4, 4, 4, 4, null, null, null, null, null, null, null, null, null, null, null],
+  }},
+  { sec: 'Paragon', id: '', name: 'Riverline Early Demo',
+    crewInfo: { site: { crew: '', pm: 'Sub' } },
+    crews: {
+    site: [null, null, 'S', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  }},
+  // ── NEI ───────────────────────────────────────────────
+  { sec: 'NEI', id: '20117', name: 'Walmart South Lake',
+    crewInfo: { nei: { crew: 'Rene', pm: '' } },
+    crews: {
+    nei: [5, 5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  }},
+  { sec: 'NEI', id: '2147', name: 'Rudisill Library',
+    crewInfo: { nei: { crew: 'Adrian', pm: '' } },
+    crews: {
+    nei: [5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  }},
+  { sec: 'NEI', id: '2151', name: 'ORU Housing & Dining',
+    crewInfo: { nei: { crew: 'Rene', pm: '' } },
+    crews: {
+    nei: [5, 5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  }},
+  // ── UNITED GOLF ───────────────────────────────────────
+  { sec: 'UG', id: '20229', name: 'Caswell',
+    crewInfo: { ug: { crew: 'Bickie', pm: '' } },
+    crews: {
+    ug: [7, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  }},
+  { sec: 'UG', id: '20242', name: 'Hardscrabble CC',
+    crewInfo: { ug: { crew: 'Ismael', pm: '' } },
+    crews: {
+    ug: [11, 11, 11, 11, 11, 11, 11, null, null, null, null, null, null, null, null, null, null, null, null],
+  }},
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let activeFilter = 'all';
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function buildTable() {
+  const tbl = document.getElementById('gantt');
+  let h = '<thead>';
+
+  // Row 1: project label + month spans
+  h += '<tr class="hdr-mo">';
+  h += `<th class="sk sk0 proj-col" rowspan="2" style="width:50px;min-width:50px;z-index:6;text-align:center">#</th>`;
+  h += `<th class="sk sk1 proj-col" rowspan="2" style="width:185px;min-width:185px;z-index:6;text-align:left">Project Name</th>`;
+  h += `<th class="sk sk2 proj-col" rowspan="2" style="width:80px;min-width:80px;z-index:6;text-align:center">Crew / Trade</th>`;
+  h += `<th class="sk sk3 proj-col" rowspan="2" style="width:80px;min-width:80px;z-index:6;text-align:center;border-right:2px solid rgba(255,255,255,.3)">PM / GS</th>`;
+  MO_SPANS.forEach((ms, mi) => {
+    h += `<th colspan="${ms.n}"${mi > 0 ? ' class="mo-first"' : ''}>${ms.mo} 2026</th>`;
+  });
+  h += '</tr>';
+
+  // Row 2: week date labels
+  h += '<tr class="hdr-wk">';
+  WEEKS.forEach(w => {
+    const nm = w.i > 0 && WEEKS[w.i - 1].moIdx !== w.moIdx;
+    const cls = [nm ? 'mo-first' : '', w.now ? 'now-col' : ''].filter(Boolean).join(' ');
+    h += `<th${cls ? ` class="${cls}"` : ''}>${w.lbl}${w.now ? '<br><span style="font-size:7px;opacity:.8">NOW</span>' : ''}</th>`;
+  });
+  h += '</tr>';
+
+  h += '</thead><tbody>';
+
+  let lastSec = '';
+  PROJECTS.forEach((proj, pi) => {
+    const visible = Object.entries(proj.crews).some(
+      ([k, v]) => (activeFilter === 'all' || activeFilter === k) && v.some(x => x != null)
+    );
+    if (!visible) return;
+
+    if (proj.sec !== lastSec) {
+      lastSec = proj.sec;
+      const bg = SEC_COLORS[proj.sec];
+      h += `<tr class="sec-row"><td colspan="${4 + NW}" style="background:${bg}">${SEC_LABELS[proj.sec]}</td></tr>`;
+    }
+
+    h += `<tr class="prow">`;
+    h += `<td class="sk sk0 job-no">${proj.id || '—'}</td>`;
+    h += `<td class="sk sk1 proj-name">${proj.name}</td>`;
+
+    // CREW column — stacked labels per active crew type
+    const crewInfo = proj.crewInfo || {};
+    const crewCells = Object.entries(proj.crews)
+      .filter(([k, v]) => (activeFilter === 'all' || activeFilter === k) && v.some(x => x != null))
+      .map(([k]) => {
+        const ci = crewInfo[k] || {};
+        const c = CREWS[k];
+        const txt = ci.crew || '';
+        return txt
+          ? `<span class="strip" style="background:${c.bg};color:${c.fg}">${txt}</span>`
+          : `<span style="display:block;height:20px"></span>`;
+      }).join('');
+    h += `<td class="sk sk2 crew-col">${crewCells}</td>`;
+
+    // PM/GS column
+    const pmCells = Object.entries(proj.crews)
+      .filter(([k, v]) => (activeFilter === 'all' || activeFilter === k) && v.some(x => x != null))
+      .map(([k]) => {
+        const ci = crewInfo[k] || {};
+        const c = CREWS[k];
+        const txt = ci.pm || '';
+        return txt
+          ? `<span class="strip" style="background:${c.bg};color:${c.fg}">${txt}</span>`
+          : `<span style="display:block;height:20px"></span>`;
+      }).join('');
+    h += `<td class="sk sk3 pm-col">${pmCells}</td>`;
+
+    WEEKS.forEach(w => {
+      const nm = w.i > 0 && WEEKS[w.i - 1].moIdx !== w.moIdx;
+      const cls = ['week-cell', nm ? 'mo-first' : '', w.now ? 'now-col' : ''].filter(Boolean).join(' ');
+      const active = [];
+      Object.entries(proj.crews).forEach(([k, v]) => {
+        if (activeFilter === 'all' || activeFilter === k) {
+          const val = v[w.i];
+          if (val != null) active.push({ k, val });
+        }
+      });
+      h += `<td class="${cls}">`;
+      active.forEach(({ k, val }) => {
+        const c = CREWS[k];
+        const isSub = val === 'S';
+        const liveVal = getLiveVal(k, proj.id, proj.name, w.i);
+        const hasLive = liveVal !== undefined && !isSub;
+
+        if (isSub) {
+          h += `<span class="strip strip-sub" style="color:${c.bg};border-color:${c.bg}">${c.abbr} SUB</span>`;
+        } else if (hasLive) {
+          const arrow = liveVal < val ? '▼' : liveVal > val ? '▲' : '●';
+          const liveColor = liveVal < val ? '#c62828' : liveVal > val ? '#2e7d32' : c.bg;
+          h += `<span class="strip" style="background:${c.bg};color:${c.fg};opacity:.45;font-size:8px;padding:1px 3px">${c.abbr} ${val}</span>`;
+          h += `<span class="strip" style="background:${liveColor};color:#fff;outline:2px solid ${liveColor}">${arrow} ${liveVal}</span>`;
+        } else {
+          h += `<span class="strip" style="background:${c.bg};color:${c.fg}">${c.abbr} ${val}</span>`;
+        }
+      });
+      h += '</td>';
+    });
+
+    h += '</tr>';
+  });
+
+  h += '</tbody>';
+  tbl.innerHTML = h;
+}
+
+function buildFilters() {
+  const tb = document.getElementById('toolbar');
+  let h = '<span class="toolbar-label">FILTER:</span>';
+  h += `<button id="bf-all" class="fbtn on" onclick="setFilter('all')">All Groups</button>`;
+  Object.entries(CREWS).forEach(([k, c]) => {
+    h += `<button id="bf-${k}" class="fbtn" onclick="setFilter('${k}')">
+      <span class="dot" style="background:${c.bg}"></span>${c.label}
+    </button>`;
+  });
+  h += `<span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px">
+    <label style="font-size:11px;color:var(--muted);font-weight:600">WEEK</label>
+    <input type="date" id="liveWeek" style="padding:4px 7px;border-radius:5px;border:1px solid var(--border);font-size:11px;font-family:inherit;color:var(--text)" />
+    <button class="fbtn" onclick="loadLiveData()" style="background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;border-width:1px">
+      📡 Load Live Data
+    </button>
+  </span>`;
+  tb.innerHTML = h;
+  const wk = document.getElementById('liveWeek');
+  if(wk) wk.value = currentMonday();
+}
+
+// ── Live Data Overlay ───────────────────────────────────────────────────────
+let liveOverlay = {};
+
+function liveKey(crewType, jobNo, projName) {
+  return `${crewType}|${jobNo}|${projName}`;
+}
+
+function currentMonday() {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().split('T')[0];
+}
+
+function fmtStamp(isoStr) {
+  if (!isoStr) return '';
+  try {
+    const d = new Date(isoStr);
+    const m = d.getMonth() + 1, day = d.getDate();
+    let h = d.getHours(), min = d.getMinutes();
+    const ampm = h >= 12 ? 'p' : 'a';
+    h = h % 12 || 12;
+    return `${m}/${day} ${h}:${String(min).padStart(2,'0')}${ampm}`;
+  } catch(_) { return ''; }
+}
+
+async function loadLiveData() {
+  const picker = document.getElementById('liveWeek');
+  const week = picker ? picker.value : currentMonday();
+  if(!week){ alert('Select a week first.'); return; }
+  try {
+    const res = await fetch(blobUrl({ week }));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const allSupers = await res.json();
+    if (!allSupers || !Object.keys(allSupers).length) {
+      showLiveBar('No live data submitted yet for week of ' + week, false, '');
+      return;
+    }
+    liveOverlay = {};
+    let rowCount = 0;
+    const stampParts = [];
+
+    Object.entries(allSupers).forEach(([superKey, superData]) => {
+      if (!superData || !superData.rows) return;
+      superData.rows.forEach(row => {
+        const crewMap = { site: 'site', util: 'utility', conc: 'concrete', asph: 'asphalt' };
+        const crewType = crewMap[row.sec] || row.sec;
+        const key = liveKey(crewType, row.jn || '', row.pn || '');
+        if (!liveOverlay[key]) liveOverlay[key] = {};
+        const w0vals = (row.days||[]).slice(0,5).map(Number).filter(v=>!isNaN(v)&&v>0);
+        const w1vals = (row.days||[]).slice(5,10).map(Number).filter(v=>!isNaN(v)&&v>0);
+        if (w0vals.length) liveOverlay[key][0] = Math.max(...w0vals);
+        if (w1vals.length) liveOverlay[key][1] = Math.max(...w1vals);
+        rowCount++;
+      });
+
+      // Build stamp: "Jared · saved 6/13 9:14a (by Mike)" if savedBy differs
+      const name = superKey.charAt(0).toUpperCase() + superKey.slice(1);
+      const stamp = fmtStamp(superData.savedAt);
+      const savedBy = superData.savedBy || superKey;
+      const byNote = savedBy !== superKey ? ` (by ${savedBy.charAt(0).toUpperCase()+savedBy.slice(1)})` : '';
+      if (stamp) stampParts.push(`${name} · saved ${stamp}${byNote}`);
+    });
+
+    const superNames = Object.keys(allSupers).map(s => s.charAt(0).toUpperCase()+s.slice(1)).join(', ');
+    showLiveBar(
+      `📡 Live: ${superNames} — ${rowCount} row(s) for week of ${week}`,
+      true,
+      stampParts.join('  ·  ')
+    );
+    buildTable();
+  } catch(e) {
+    showLiveBar('Failed to load live data: ' + e.message, false, '');
+  }
+}
+
+function clearLive() {
+  liveOverlay = {};
+  document.getElementById('live-bar').style.display = 'none';
+  buildTable();
+}
+
+function showLiveBar(msg, ok, stamps) {
+  const bar = document.getElementById('live-bar');
+  const msgEl = document.getElementById('live-msg');
+  const stampEl = document.getElementById('live-stamps');
+  bar.style.display = 'flex';
+  bar.style.background = ok ? '#e8f5e9' : '#fff3e0';
+  bar.style.color = ok ? '#2e7d32' : '#e65100';
+  bar.style.borderBottomColor = ok ? '#a5d6a7' : '#ffcc80';
+  msgEl.textContent = msg;
+  if (stampEl) stampEl.textContent = stamps || '';
+}
+
+function getLiveVal(crewType, projId, projName, weekIdx) {
+  const key = liveKey(crewType, projId, projName);
+  return liveOverlay[key] ? liveOverlay[key][weekIdx] : undefined;
+}
+
+function buildLegend() {
+  const lg = document.getElementById('legend');
+  let h = '<span class="legend-label">Legend:</span>';
+  Object.entries(CREWS).forEach(([k, c]) => {
+    h += `<span class="leg-item">
+      <span class="leg-swatch" style="background:${c.bg}"></span>
+      ${c.label}
+    </span>`;
+  });
+  h += `<span class="leg-item">
+    <span class="leg-swatch" style="background:transparent;border:1px dashed #999"></span>
+    Subcontractor (SUB)
+  </span>`;
+  h += `<span class="leg-item" style="margin-left:8px">
+    <span class="leg-now"></span>
+    Current week (5/25)
+  </span>`;
+  h += `<span style="margin-left:auto;font-size:10px;color:#999">SANDBOX · Source: Paragon_Master_Schedule_5-18-2026.xlsx</span>`;
+  lg.innerHTML = h;
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.fbtn').forEach(b => {
+    b.classList.remove('on');
+    b.style.background = '#fff';
+    b.style.color = '';
+    b.style.borderColor = '';
+    b.style.borderWidth = '1px';
+  });
+  const btn = document.getElementById('bf-' + f);
+  if (btn) {
+    btn.classList.add('on');
+    if (f === 'all') {
+      btn.style.background = '#1F3864';
+      btn.style.color = '#fff';
+      btn.style.borderColor = '#1F3864';
+    } else {
+      const c = CREWS[f];
+      btn.style.background = c.lb;
+      btn.style.color = c.ld;
+      btn.style.borderColor = c.ld;
+      btn.style.borderWidth = '1.5px';
+    }
+  }
+  buildTable();
+}
+
+// Init
+buildFilters();
+buildTable();
+buildLegend();
+</script>
+</body>
+</html>
