@@ -110,7 +110,7 @@ table.la{
 .la .r-job:hover td{background:#EBF3FB !important}
 
 /* info cells */
-.la td.info-cell{padding:2px 4px}
+.la td.info-cell{padding:2px 4px;overflow:hidden;max-width:0}
 input.fi{
   width:100%;padding:3px 5px;border:none;background:transparent;
   font-size:11px;font-family:inherit;color:#1a1a1a;min-height:26px;outline:none
@@ -261,6 +261,9 @@ td.del-cell{width:22px;text-align:center;padding:1px}
       <option value="anthony">Anthony</option>
       <option value="rye">Rye</option>
       <option value="miller">Miller</option>
+      <optgroup label="— Management —">
+        <option value="mike" data-role="reviewer">Mike (PM Review)</option>
+      </optgroup>
     </select>
   </div>
   <button id="focusToggle" onclick="toggleFocusMode()" title="Show only your rows">👁 My Jobs Only</button>
@@ -277,6 +280,10 @@ td.del-cell{width:22px;text-align:center;padding:1px}
 
 <div id="cloud-bar">
   <span id="cloud-msg">✓ Saved to paragontulsaresults.com</span>
+</div>
+
+<div id="review-banner" style="display:none;background:#1B3A6B;color:#FFD966;font-size:11px;font-weight:700;padding:6px 14px;letter-spacing:.4px;border-bottom:2px solid #FFD966">
+  👁 REVIEW MODE — all crews visible · edits write back to each super's record · <span id="review-dirty-count"></span>
 </div>
 
 <div id="main"></div>
@@ -582,9 +589,15 @@ function buildJobRow(sec, job, jIdx){
       return `<td class="info-cell ${c.cls}"><span style="${c.style||''}">${c.v}</span></td>`;
     }
     const onch = c.k ? `updateJobField('${sec.id}','${id}','${c.k}',this.value)` : '';
-    return `<td class="info-cell ${c.cls}">
+    // Owner chip: absolutely positioned so it never affects row height
+    const ownerChip = (reviewMode && c.k === 'crew' && job._owner)
+      ? `<span style="position:absolute;bottom:1px;left:2px;font-size:8px;color:#fff;background:#1B3A6B;border-radius:2px;padding:0 3px;letter-spacing:.2px;pointer-events:none;z-index:1" class="no-export">${job._owner}</span>`
+      : '';
+    const tdStyle = (reviewMode && c.k === 'crew') ? 'position:relative;' : '';
+    return `<td class="info-cell ${c.cls}" style="${tdStyle}">
       <input class="fi ${c.cls}" type="${c.type||'text'}" value="${esc(c.v)}"
         placeholder="${c.ph||''}" ${onch?`onchange="${onch}"`:''} />
+      ${ownerChip}
     </td>`;
   }).join('');
 
@@ -782,6 +795,17 @@ function focusDayById(jobId, colIdx){
 
 // ─── FOCUS MODE ──────────────────────────────────────────────────────────────
 let focusMode = false;
+let reviewMode = false;
+
+const REVIEWER_SLUGS = new Set(['mike']);
+
+function setReviewMode(on) {
+  reviewMode = on;
+  document.getElementById('review-banner').style.display = on ? 'block' : 'none';
+  document.getElementById('focusToggle').style.display = on ? 'none' : '';
+  document.querySelector('.btn-save').textContent = on ? '☁ Save Changes' : '☁ Save My Rows';
+  document.querySelector('.btn-load').textContent = on ? '📂 Load All Rows' : '📂 Load My Rows';
+}
 
 function toggleFocusMode(){
   focusMode = !focusMode;
@@ -808,16 +832,33 @@ function applyFocusMode(){
 // ─── SUPER SELECTION ─────────────────────────────────────────────────────────
 function onSuperChange(superVal){
   state.superName = superVal;
-  // Auto-enable focus mode when a super is selected
-  if(superVal && !focusMode){
-    focusMode = true;
-    document.getElementById('focusToggle').classList.add('active');
-  } else if(!superVal && focusMode){
+  const isReviewer = REVIEWER_SLUGS.has(superVal);
+
+  // Set focusMode FIRST so applyFocusMode() works correctly even if setReviewMode throws
+  if(isReviewer){
     focusMode = false;
-    document.getElementById('focusToggle').classList.remove('active');
+    reviewMode = true;
+  } else {
+    reviewMode = false;
+    if(superVal && !focusMode){
+      focusMode = true;
+    } else if(!superVal){
+      focusMode = false;
+    }
   }
+
+  // Update UI (safe — wrapped so any DOM error can't leave state inconsistent)
+  try { setReviewMode(isReviewer); } catch(e){ console.error('[setReviewMode]', e); }
+
+  const ft = document.getElementById('focusToggle');
+  if(ft){
+    ft.style.display = isReviewer ? 'none' : '';
+    ft.classList.toggle('active', focusMode && !isReviewer);
+  }
+
   highlightMyRows();
   applyFocusMode();
+  render();
 }
 
 function myCrewNames(){
@@ -840,6 +881,7 @@ function myCrewNames(){
 }
 
 function isMyRow(job){
+  if(reviewMode) return true; // reviewer sees and edits all rows
   const names = myCrewNames();
   if(!names.length) return false;
   const crew = (job.crew||'').toLowerCase();
@@ -862,19 +904,33 @@ function highlightMyRows(){
 }
 
 // ─── SAVE / LOAD ─────────────────────────────────────────────────────────────
+
+// Maps crew field text → super slug for ownership assignment
+function crewToSuper(crewStr) {
+  const c = (crewStr||'').toLowerCase();
+  const MAP = {
+    jared:'jared', rolondo:'rolondo', elijah:'elijah', john:'john',
+    jimmy:'jimmy', randy:'randy', sergio:'sergio', anthony:'anthony',
+    rye:'rye', miller:'miller',
+  };
+  for(const [slug, name] of Object.entries(MAP)){
+    if(c.includes(slug)) return slug;
+  }
+  return 'unassigned';
+}
+
 async function saveData(){
   const superName = state.superName;
-  if(!superName){
-    toast('Select your name first.');
-    return;
-  }
+  if(!superName){ toast('Select your name first.'); return; }
   const week = state.weekOf;
-  if(!week){
-    toast('Select a week first.');
+  if(!week){ toast('Select a week first.'); return; }
+
+  if(reviewMode){
+    await saveReviewChanges(week);
     return;
   }
 
-  // Collect only this super's rows
+  // ── Super save (unchanged) ──────────────────────────────────────────────────
   const rows = [];
   state.sections.forEach(sec => {
     sec.jobs.forEach(job => {
@@ -882,20 +938,12 @@ async function saveData(){
         rows.push({
           sec: sec.id,
           jobRef: (job.jn||'') + '|' + (job.pn||''),
-          jn: job.jn,
-          pn: job.pn,
-          crew: job.crew,
-          days: [...job.days],
+          jn: job.jn, pn: job.pn, crew: job.crew, days: [...job.days],
         });
       }
     });
   });
-
-  if(!rows.length){
-    toast('No rows found for ' + superName + '. Check your crew name matches.');
-    return;
-  }
-
+  if(!rows.length){ toast('No rows found for ' + superName + '. Check your crew name matches.'); return; }
   try {
     const res = await fetch(blobUrl(), {
       method: 'POST',
@@ -919,20 +967,79 @@ async function saveData(){
   }
 }
 
+async function saveReviewChanges(week){
+  // Find dirty jobs (days changed since load)
+  const byOwner = {};
+  state.sections.forEach(sec => {
+    sec.jobs.forEach(job => {
+      const orig = job._origDays || Array(15).fill('');
+      const dirty = job.days.some((v,i) => String(v) !== String(orig[i]));
+      if(!dirty) return;
+      const owner = job._owner || crewToSuper(job.crew);
+      if(!byOwner[owner]) byOwner[owner] = [];
+      byOwner[owner].push({
+        sec: sec.id,
+        jobRef: (job.jn||'')+'|'+(job.pn||''),
+        jn: job.jn, pn: job.pn, crew: job.crew, days: [...job.days],
+      });
+    });
+  });
+
+  if(!Object.keys(byOwner).length){
+    toast('No changes to save.');
+    return;
+  }
+
+  // POST one merge request per owner
+  const results = [];
+  const errors = [];
+  await Promise.all(Object.entries(byOwner).map(async ([owner, rows]) => {
+    try {
+      const res = await fetch(blobUrl() + '&merge=true', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ week, owner, rows, savedBy: 'mike', status: 'draft' }),
+      });
+      const data = await res.json();
+      if(data.ok) results.push(owner.charAt(0).toUpperCase()+owner.slice(1) + ' (' + rows.length + ')');
+      else errors.push(owner);
+    } catch(e) { errors.push(owner); }
+  }));
+
+  // Update origDays snapshot so a second save doesn't re-send same rows
+  state.sections.forEach(sec => sec.jobs.forEach(job => { job._origDays = [...job.days]; }));
+
+  const msg = results.length ? 'Saved: ' + results.join(', ') : '';
+  const errMsg = errors.length ? '  Errors: ' + errors.join(', ') : '';
+  const bar = document.getElementById('cloud-bar');
+  document.getElementById('cloud-msg').textContent = '✓ ' + msg + errMsg;
+  bar.classList.add('show');
+  setTimeout(()=>bar.classList.remove('show'), 6000);
+  toast(msg || 'Save failed');
+}
+
 async function loadData(){
   const superName = state.superName;
   if(!superName){ toast('Select your name first.'); return; }
   const week = state.weekOf;
   if(!week){ toast('Select a week first.'); return; }
 
+  if(reviewMode){
+    await loadAllRows(week);
+    return;
+  }
+
   try {
     const res = await fetch(blobUrl({ week, super: superName }));
     const data = await res.json();
     if(!data || !data.rows || !data.rows.length){
-      toast('No saved data found for ' + superName + ' / ' + week);
+      // No sandbox save yet — fall back to prod store for the same super/week
+      await applyProdFallback(week, superName);
+      render();
+      highlightMyRows();
+      toast('Showing prod history for ' + superName + ' / ' + week + ' (no sandbox save yet)');
       return;
     }
-    // Apply rows back into state
     data.rows.forEach(saved => {
       const sec = state.sections.find(s => s.id === saved.sec);
       if(!sec) return;
@@ -947,6 +1054,132 @@ async function loadData(){
   } catch(e) {
     toast('Load failed: ' + e.message);
   }
+}
+
+async function loadAllRows(week){
+  try {
+    // Fetch all supers' saves for this week
+    const res = await fetch(blobUrl({ week }));
+    const allSupers = await res.json();
+    // Clear only owner tags — keep existing seed/baseline days as defaults
+    state.sections.forEach(sec => sec.jobs.forEach(job => {
+      job._owner = null;
+    }));
+
+    const hasData = allSupers && Object.keys(allSupers).length;
+    let totalRows = 0;
+    if(hasData){
+      Object.entries(allSupers).forEach(([superKey, superData]) => {
+        if(!superData || !superData.rows) return;
+        superData.rows.forEach(saved => {
+          const sec = state.sections.find(s => s.id === saved.sec);
+          if(!sec) return;
+          const job = sec.jobs.find(j =>
+            ((j.jn||'')+'|'+(j.pn||'')) === saved.jobRef
+          );
+          if(job){
+            // Overlay saved days — non-empty saved value wins over seed default
+            if(saved.days) {
+              job.days = saved.days.map((v,i) =>
+                (v !== null && v !== undefined && v !== '') ? v : job.days[i]
+              );
+            }
+            job._owner = superKey;
+          }
+          totalRows++;
+        });
+      });
+    }
+
+    // If no sandbox saves exist, pull historical baseline from prod store
+    if(!hasData) await applyProdFallbackAll(week);
+    else await applyRollupFallback(week);
+
+    // Snapshot origDays for dirty detection on save
+    state.sections.forEach(sec => sec.jobs.forEach(job => {
+      job._origDays = [...job.days];
+      // Infer owner from crew field if still untagged
+      if(!job._owner) job._owner = crewToSuper(job.crew) || null;
+    }));
+    render();
+    const summary = hasData
+      ? 'Loaded: ' + Object.keys(allSupers).map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join(', ') + ' ✓'
+      : 'No saves yet — showing job-detail history ✓';
+    toast(summary);
+  } catch(e) {
+    toast('Load failed: ' + e.message);
+  }
+}
+
+// Reads one super's rows from the PROD store and overlays them onto state.
+// Used when no sandbox save exists yet — prod data serves as the read baseline.
+async function applyProdFallback(week, superName){
+  try {
+    const res = await fetch('/api/blobs?week=' + encodeURIComponent(week) + '&super=' + encodeURIComponent(superName));
+    if(!res.ok) return;
+    const data = await res.json();
+    if(!data || !data.rows || !data.rows.length) return;
+    data.rows.forEach(saved => {
+      const sec = state.sections.find(s => s.id === saved.sec);
+      if(!sec) return;
+      const job = sec.jobs.find(j => ((j.jn||'')+'|'+(j.pn||'')) === saved.jobRef);
+      if(job && saved.days) job.days = [...saved.days];
+    });
+  } catch(_) {}
+}
+
+// Reads ALL supers' rows from the PROD store and overlays them onto state.
+async function applyProdFallbackAll(week){
+  try {
+    const res = await fetch('/api/blobs?week=' + encodeURIComponent(week));
+    if(!res.ok) return;
+    const allSupers = await res.json();
+    if(!allSupers || !Object.keys(allSupers).length) return;
+    Object.entries(allSupers).forEach(([superKey, superData]) => {
+      if(!superData || !superData.rows) return;
+      superData.rows.forEach(saved => {
+        const sec = state.sections.find(s => s.id === saved.sec);
+        if(!sec) return;
+        const job = sec.jobs.find(j => ((j.jn||'')+'|'+(j.pn||'')) === saved.jobRef);
+        if(job && saved.days && !job._owner){
+          job.days = saved.days.map(v => {
+            const n = parseFloat(v);
+            return (!isNaN(n) && String(v).trim() !== '') ? n : (v || '');
+          });
+          job._owner = superKey;
+        }
+      });
+    });
+  } catch(_) {}
+}
+
+// Fetches the job-detail rollup for a week and fills in days on any job whose
+// days are currently all-empty. Gives Mike (and supers) a historical baseline
+// when no one has explicitly saved via the super interface yet.
+async function applyRollupFallback(week){
+  try {
+    // Job-detail data uses legacy sandbox=true prefix in the prod store, NOT env=sandbox.
+    // Must bypass blobUrl() here to hit the correct store + key namespace.
+    const res = await fetch('/api/blobs?week=' + encodeURIComponent(week) + '&sandbox=true&rollup=true');
+    if(!res.ok) return;
+    const data = await res.json();
+    if(!data || !data.sections) return;
+    state.sections.forEach(sec => {
+      const rollupSec = data.sections[sec.id];
+      if(!rollupSec || !rollupSec.rows) return;
+      rollupSec.rows.forEach(rRow => {
+        const job = sec.jobs.find(j =>
+          (j.jn && j.jn === rRow.jn) || ((j.jn||'')+'|'+(j.pn||'')) === ((rRow.jn||'')+'|'+(rRow.pn||''))
+        );
+        if(!job) return;
+        // Only backfill if all current days are empty
+        const allEmpty = job.days.every(v => v === '' || v === null || v === undefined);
+        if(allEmpty && rRow.days) {
+          job.days = rRow.days.map(v => (v || v === 0) ? v : '');
+        }
+      });
+    });
+  } catch(_) { /* rollup is best-effort, never block the load */ }
 }
 
 // ─── TOAST ───────────────────────────────────────────────────────────────────

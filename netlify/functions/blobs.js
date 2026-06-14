@@ -106,6 +106,7 @@ async function handleCrew(event, params) {
   const store = getCrewStore(env === 'sandbox' ? 'sandbox' : 'prod');
   const { week, super: superName, job: jobNum, sandbox } = params;
 
+
   // ── Baseline routes ──────────────────────────────────────────────────────
   // GET  ?baseline=current  → return active baseline JSON
   // POST {baseline, sections} → write baseline:{cutDate} then baseline:current
@@ -225,7 +226,32 @@ async function handleCrew(event, params) {
   }
 
   if (event.httpMethod === "POST") {
-    const body = JSON.parse(event.body || "{}");
+    let body;
+    try { body = JSON.parse(event.body || "{}"); } catch(_) { body = {}; }
+
+    // ── Merge route: POST ?merge=true — read-overlay-write in one invocation ──
+    // Closes the stale-read window for Review Mode (Mike) saves.
+    if (params.merge === "true") {
+      const { week: w, owner, rows: inRows, savedBy: sb, status: st } = body;
+      if (!w || !owner || !Array.isArray(inRows))
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "week, owner, rows required" }) };
+      const key = w + ":" + owner;
+      // Fresh read of current blob
+      let existing = { week: w, super: owner, rows: [] };
+      try {
+        const raw = await store.get(key);
+        if (raw) existing = typeof raw === "string" ? JSON.parse(raw) : raw;
+      } catch(_) {}
+      // Overlay: replace rows whose jobRef appears in inRows, append new ones
+      const inMap = new Map(inRows.map(r => [r.jobRef, r]));
+      const merged = (existing.rows || []).map(r => inMap.has(r.jobRef) ? { ...r, ...inMap.get(r.jobRef) } : r);
+      inRows.forEach(r => { if (!merged.find(m => m.jobRef === r.jobRef)) merged.push(r); });
+      const savedAt = new Date().toISOString();
+      const value = JSON.stringify({ week: w, super: owner, rows: merged, savedBy: sb || owner, savedAt, status: st || "draft", updated: savedAt });
+      await store.set(key, value);
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, key, savedAt, rowsWritten: inRows.length }) };
+    }
+
     const { week: w, super: s, rows, sandbox: sbx, savedBy, status } = body;
     const keyNs = sbx === true ? "sandbox:" : "";
     const key = keyNs + w + ":" + s;
