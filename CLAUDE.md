@@ -231,47 +231,55 @@ All active 2026 jobs pre-loaded with crew assignments and 6/1/2026 week values:
 
 ---
 
-## Current state — as of 6/5/2026
+## Current state — as of 6/14/2026
 
-### Completed this session
-1. ✅ **v2 promoted to production** — `lookahead-sandbox.html` → `lookahead.html`, deployed
-2. ✅ **`job-detail-sandbox.html`** — task-level entry for crew leads, full feature set
-3. ✅ **Blobs API extended** — job-detail save/load + week rollup aggregation endpoint
-4. ✅ **`index.html`** — Job Detail Entry card added (In Review badge)
-5. ✅ **Historical data seeded** — 14 jobs × 2 weeks in Netlify Blobs (seed page deleted)
-6. ✅ **Full job roster in SEED_JOBS** — all 2026 active jobs with crew/day data
-7. ✅ **`importFromJobDetail()`** — wired in lookahead.html (⬆ Import Job Detail button)
-8. ✅ **Mobile field input** — card view auto-activates on phone (<768px) in focus mode
-9. ✅ **`team-handout.html`** — print-ready one-pager, full Paragon color scheme, QR code
+> **Full status snapshot:** see [`Paragon_WorkOrder_Status_20260614.md`](Paragon_WorkOrder_Status_20260614.md)
+> for the detailed list of what changed and every open item. The list below is the working blueprint.
+
+### Completed 6/14/2026 (tag `excel-base-load`)
+1. ✅ **Excel export works** — `shared/excel-export.js` rewritten as SpreadsheetML with live
+   SUM / over-under formulas (root cause: invalid `LineStyle="Thin"`)
+2. ✅ **Production data loads** — `IS_SANDBOX` flag; prod reads/writes unprefixed keys
+3. ✅ **History auto-prepopulates** — `loadAllRows()` on open + week change
+4. ✅ **Monday snap** — `toMonday()`; Sunday rolls forward to next Monday
+5. ✅ **Excel base load** — all weeks 6/15→9/21 loaded from `Paragon Master Schedule 6-15-2026.xlsx`;
+   `DEFAULT_JOBS` roster regenerated to match
+6. ✅ **Dynamic name filter** — dropdown built from all CREW + PM/GS names; filters on either field
 
 ---
 
-## Next session — full cycle completion
+## Parallel-run cadence — build trust before cutover (next ~4 weeks)
 
-### Priority 1 — End-to-end test the full cycle
-```
-1. Open job-detail-sandbox.html → pick job 565 → week 6/1/2026 → Load → verify Jared's 5s appear
-2. Modify a day value → Save
-3. Open lookahead.html → pick week 6/1/2026 → click "⬆ Import Job Detail"
-4. Confirm 565 row populates with the saved values
-5. Click "⬇ Export Excel" → confirm output matches Excel master format
-```
+**Goal:** run the app alongside the Excel master each week until the app's Export Excel matches
+the official master for **4 consecutive weeks**. Only then propose cutover. This is about trust,
+not speed — never rush the cutover.
 
-### Priority 2 — Promote job-detail to production
-- `job-detail-sandbox.html` → `job-detail.html`
-- Update `index.html` card: href → `/job-detail.html`, badge → green "Crew Leads"
-- Keep sandbox copy for future dev
+**Weekly cycle (repeat for masters 6/22, 6/29, 7/6, 7/13):**
+1. **Mon — reload:** when the new weekly master drops (`Paragon Master Schedule <M-D>-2026.xlsx`
+   in `P:\009 - Active Project Schedule\`), re-load future weeks into the prod blob store and
+   regenerate `DEFAULT_JOBS` if the roster/crews changed. (Currently a manual PowerShell→POST
+   pipeline — see status doc item #2.)
+2. **Tue–Thu — field entry:** supers enter/confirm crew counts in `lookahead.html`.
+3. **Fri — reconcile:** Export Excel from the app, compare column-for-column against the official
+   master. Log any discrepancy (job, week, expected vs actual) and root-cause it.
+4. **Track:** record each week pass/fail. 4 clean weeks in a row → cutover candidate.
 
-### Priority 3 — PM/CEO read-only view
-- New `pm-view.html`: auto-loads ALL supers' data for a selected week
-- No name picker — shows all sections fully populated
-- Tyler/Dale can view without touching the input form
-- Same Export Excel button
+**Reconcile checklist when comparing app export vs master:**
+- Staff Required / Over-Under totals match per day column
+- Job roster matches (no missing/duplicate rows, names aligned)
+- Headcounts match for each crew section
+- SUB / text cells preserved
 
-### Priority 4 — Verify exportExcel() matches master
-- `exportExcel()` was not modified during v2 or mobile work
-- Confirm CEO-facing output still matches the original Excel master column-for-column
-- Do not restyle without checking first
+---
+
+## Backlog (after parallel run stabilizes)
+
+- **Promote `job-detail-sandbox.html` → `job-detail.html`** (update `index.html` card)
+- **`pm-view.html`** — read-only all-supers view (largely covered now by `loadAllRows()`)
+- **NEI / FSL / United Golf** — add to `lookahead.html` if look-ahead should include them
+- **Seed-from-Excel feature** — self-serve upload→seed (replaces manual pipeline)
+- **Merge PR `lookahead-v2` → `main`** after parallel run is clean
+- **Past weeks 5/18–6/8** — held as historical; reload only if needed
 
 ---
 
