@@ -106,6 +106,36 @@ async function handleCrew(event, params) {
   const store = getCrewStore(env === 'sandbox' ? 'sandbox' : 'prod');
   const { week, super: superName, job: jobNum, sandbox } = params;
 
+  // ── Baseline routes ──────────────────────────────────────────────────────
+  // GET  ?baseline=current  → return active baseline JSON
+  // POST {baseline, sections} → write baseline:{cutDate} then baseline:current
+  if (params.baseline !== undefined && event.httpMethod === "GET") {
+    try {
+      const ptr = await store.get("baseline:current");
+      if (!ptr) return { statusCode: 404, headers, body: JSON.stringify({ error: "No baseline found" }) };
+      const cutDate = typeof ptr === "string" ? ptr.trim() : String(ptr);
+      const raw = await store.get("baseline:" + cutDate);
+      if (!raw) return { statusCode: 404, headers, body: JSON.stringify({ error: "Baseline data missing" }) };
+      const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      return { statusCode: 200, headers, body: JSON.stringify(data) };
+    } catch (err) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    }
+  }
+
+  if (event.httpMethod === "POST") {
+    let body;
+    try { body = JSON.parse(event.body || "{}"); } catch (_) { body = {}; }
+    if (body.baseline) {
+      const { baseline: cutDate, sections } = body;
+      if (!cutDate || !sections) return { statusCode: 400, headers, body: JSON.stringify({ error: "baseline and sections required" }) };
+      // Write data first, then pointer — if pointer write fails, data is still safe
+      await store.set("baseline:" + cutDate, JSON.stringify({ cutDate, sections, savedAt: new Date().toISOString() }));
+      await store.set("baseline:current", cutDate);
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, cutDate }) };
+    }
+  }
+
   // Legacy key-prefix isolation (job-detail-sandbox.html still uses ?sandbox=true / body sandbox:true)
   const ns = sandbox === "true" ? "sandbox:" : "";
 

@@ -1097,7 +1097,57 @@ function exportExcel(){
 function esc2(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-(function init(){
+// ─── BASELINE ──────────────────────────────────────────────────────────────
+
+// Fetch baseline from blob store and populate state.sections jobs (no days).
+// Returns true on success, false on any failure (caller falls back to DEFAULT_JOBS).
+async function loadBaseline() {
+  try {
+    const res = await fetch(blobUrl({ baseline: 'current' }));
+    if (!res.ok) return false;
+    const data = await res.json();
+    if (!data || !data.sections || !Array.isArray(data.sections)) return false;
+    // Merge baseline jobs into state.sections — keep section metadata, replace jobs
+    data.sections.forEach(bSec => {
+      const sec = state.sections.find(s => s.id === bSec.id);
+      if (!sec || !Array.isArray(bSec.jobs)) return;
+      sec.jobs = bSec.jobs.map((j, i) => ({
+        ...j,
+        _id: sec.id + '_' + i,
+        days: Array(15).fill(''),
+      }));
+    });
+    console.log('[baseline] loaded from blob store');
+    return true;
+  } catch (e) {
+    console.warn('[baseline] fetch failed, using DEFAULT_JOBS:', e.message);
+    return false;
+  }
+}
+
+// Admin: push current DEFAULT_JOBS as baseline:2026-05-18 to the active store.
+// Call from browser console: uploadBaseline()
+async function uploadBaseline(cutDate) {
+  cutDate = cutDate || '2026-05-18';
+  const sections = SECTIONS.map(s => ({
+    id: s.id, label: s.label, capacity: s.capacity,
+    jobs: DEFAULT_JOBS[s.id].map(j => ({
+      jn: j.jn, pn: j.pn, crew: j.crew, pm: j.pm,
+      od: j.od, ad: j.ad, status: j.status, imp: j.imp,
+    })),
+  }));
+  const res = await fetch(blobUrl(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ baseline: cutDate, sections }),
+  });
+  const data = await res.json();
+  console.log('[baseline] upload result:', data);
+  return data;
+}
+window.uploadBaseline = uploadBaseline;
+
+(async function init(){
   // Try to load saved state from localStorage (offline fallback only)
   try{
     const raw = localStorage.getItem('paragon_la');
@@ -1131,6 +1181,9 @@ function esc2(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
     localStorage.setItem('paragon_la', JSON.stringify({weekOf:state.weekOf, superName:state.superName}));
     render();
   });
+
+  // Load job baseline from blob store; fall back to DEFAULT_JOBS silently
+  await loadBaseline();
 
   render();
 })();
